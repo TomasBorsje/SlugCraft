@@ -17,5 +17,6 @@ public class SlugCraftItemModels extends ItemModelProvider {
         withExistingParent(Registration.SIMPLE_BLOCK.getId().getPath(), modLoc("block/simple_block"));
         basicItem(Registration.RIVULET_SOUL.get());
         basicItem(Registration.HUNTER_SOUL.get());
+        basicItem(Registration.HOST_WAND.get());
     }
 }

@@ -13,6 +13,9 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
     @Override
     protected void addTranslations() {
         add(Registration.SIMPLE_BLOCK.get(), "Simple Block");
+        // Host wand
+        add(Registration.HOST_WAND.get(), "§bHost Wand");
+        add("slugcraft.host_wand_description", "Right click to start a round of Quickfire!");
         // Rivulet
         add(Registration.RIVULET_SOUL.get(), "§b§lSoul of the Rivulet");
         add("slugcraft.rivulet_power", "Gain increased movement speed, swim speed, and jump height.");

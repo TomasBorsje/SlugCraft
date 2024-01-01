@@ -15,7 +15,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class HunterSoul extends Item {
-    private static final Properties PROPERTIES = new Properties();
     public HunterSoul() {
         super(Registration.ITEM_PROPERTIES);
     }
