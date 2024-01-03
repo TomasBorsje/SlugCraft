@@ -56,7 +56,7 @@ public class QuickfireHandler {
         quickfireData.ifPresent(quickfire -> {
             // Start phase
             if(event.phase == TickEvent.Phase.START) {
-                quickfire.tickWorld();
+                quickfire.tickWorld(level);
             }
 
             // End phase
