@@ -3,8 +3,7 @@ package io.github.tomasborsje.slugcraft.items;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import io.github.tomasborsje.slugcraft.core.Registration;
-import io.github.tomasborsje.slugcraft.entities.ThrownExplosiveSpear;
-import io.github.tomasborsje.slugcraft.entities.ThrownSpear;
+import io.github.tomasborsje.slugcraft.entities.ThrownNeedle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
@@ -31,11 +30,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class Spear extends Item implements Vanishable {
+public class Needle extends Item implements Vanishable {
     private final Multimap<Attribute, AttributeModifier> defaultModifiers;
 
-    public Spear() {
-        super(new Properties().stacksTo(1));
+    public Needle() {
+        super(new Item.Properties().stacksTo(1).durability(250));
         ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
         builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Tool modifier", 8.0D, AttributeModifier.Operation.ADDITION));
         builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Tool modifier", (double)-2.9F, AttributeModifier.Operation.ADDITION));
@@ -48,7 +47,7 @@ public class Spear extends Item implements Vanishable {
 
     @Override
     public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
-        pTooltipComponents.add(Component.translatable("slugcraft.spear_description"));
+        pTooltipComponents.add(Component.translatable("slugcraft.needle_description"));
     }
 
     public UseAnim getUseAnimation(ItemStack p_43417_) {
@@ -59,24 +58,24 @@ public class Spear extends Item implements Vanishable {
         return 72000;
     }
 
-    public void releaseUsing(ItemStack itemStack, Level level, LivingEntity p_43396_, int p_43397_) {
+    public void releaseUsing(ItemStack p_43394_, Level level, LivingEntity p_43396_, int p_43397_) {
         if (p_43396_ instanceof Player player) {
-            int i = this.getUseDuration(itemStack) - p_43397_;
+            int i = this.getUseDuration(p_43394_) - p_43397_;
             if (i >= 10) {
-                int j = EnchantmentHelper.getRiptide(itemStack);
+                int j = EnchantmentHelper.getRiptide(p_43394_);
                 if (j <= 0 || player.isInWaterOrRain()) {
                     if (!level.isClientSide) {
                         if (j == 0) {
-                            ThrownSpear thrownSpear = new ThrownSpear(level, player, itemStack);
-                            thrownSpear.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 2.5F + (float)j * 0.5F, 1.0F);
+                            ThrownNeedle throwntrident = new ThrownNeedle(Registration.THROWN_NEEDLE.get(), player, level);
+                            throwntrident.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 2.5F + (float)j * 0.5F, 1.0F);
                             if (player.getAbilities().instabuild) {
-                                thrownSpear.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
+                                throwntrident.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
                             }
 
-                            level.addFreshEntity(thrownSpear);
-                            level.playSound((Player)null, thrownSpear, SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS, 1.0F, 1.0F);
+                            level.addFreshEntity(throwntrident);
+                            level.playSound((Player)null, throwntrident, SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS, 1.0F, 1.0F);
                             if (!player.getAbilities().instabuild) {
-                                player.getInventory().removeItem(itemStack);
+                                player.getInventory().removeItem(p_43394_);
                             }
                         }
                     }
@@ -120,8 +119,7 @@ public class Spear extends Item implements Vanishable {
     public InteractionResultHolder<ItemStack> use(Level p_43405_, Player p_43406_, InteractionHand p_43407_) {
         ItemStack itemstack = p_43406_.getItemInHand(p_43407_);
         p_43406_.startUsingItem(p_43407_);
-    return InteractionResultHolder.consume(itemstack);
-
+        return InteractionResultHolder.consume(itemstack);
     }
 
     public boolean hurtEnemy(ItemStack p_43390_, LivingEntity p_43391_, LivingEntity p_43392_) {

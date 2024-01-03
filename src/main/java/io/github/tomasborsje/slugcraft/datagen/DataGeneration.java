@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class DataGeneration {
 
-    public static void GenerateData(GatherDataEvent event) {
+    public static void generateData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
         PackOutput packOutput = generator.getPackOutput();
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
