@@ -66,7 +66,7 @@ public class Needle extends Item implements Vanishable {
                 if (j <= 0 || player.isInWaterOrRain()) {
                     if (!level.isClientSide) {
                         if (j == 0) {
-                            ThrownNeedle throwntrident = new ThrownNeedle(Registration.THROWN_NEEDLE.get(), player, level);
+                            ThrownNeedle throwntrident = new ThrownNeedle(player, level);
                             throwntrident.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 2.5F + (float)j * 0.5F, 1.0F);
                             if (player.getAbilities().instabuild) {
                                 throwntrident.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;

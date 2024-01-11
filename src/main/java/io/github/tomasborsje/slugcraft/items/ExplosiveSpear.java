@@ -59,24 +59,24 @@ public class ExplosiveSpear extends Item implements Vanishable {
         return 72000;
     }
 
-    public void releaseUsing(ItemStack p_43394_, Level level, LivingEntity p_43396_, int p_43397_) {
+    public void releaseUsing(ItemStack itemStack, Level level, LivingEntity p_43396_, int p_43397_) {
         if (p_43396_ instanceof Player player) {
-            int i = this.getUseDuration(p_43394_) - p_43397_;
+            int i = this.getUseDuration(itemStack) - p_43397_;
             if (i >= 10) {
-                int j = EnchantmentHelper.getRiptide(p_43394_);
+                int j = EnchantmentHelper.getRiptide(itemStack);
                 if (j <= 0 || player.isInWaterOrRain()) {
                     if (!level.isClientSide) {
                         if (j == 0) {
-                            ThrownExplosiveSpear throwntrident = new ThrownExplosiveSpear(Registration.THROWN_EXPLOSIVE_SPEAR.get(), player, level);
-                            throwntrident.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 2.5F + (float)j * 0.5F, 1.0F);
+                            ThrownExplosiveSpear thrownExplosiveSpear = new ThrownExplosiveSpear(level, player, itemStack);
+                            thrownExplosiveSpear.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 2.5F + (float)j * 0.5F, 1.0F);
                             if (player.getAbilities().instabuild) {
-                                throwntrident.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
+                                thrownExplosiveSpear.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
                             }
 
-                            level.addFreshEntity(throwntrident);
-                            level.playSound((Player)null, throwntrident, SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS, 1.0F, 1.0F);
+                            level.addFreshEntity(thrownExplosiveSpear);
+                            level.playSound((Player)null, thrownExplosiveSpear, SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS, 1.0F, 1.0F);
                             if (!player.getAbilities().instabuild) {
-                                player.getInventory().removeItem(p_43394_);
+                                player.getInventory().removeItem(itemStack);
                             }
                         }
                     }

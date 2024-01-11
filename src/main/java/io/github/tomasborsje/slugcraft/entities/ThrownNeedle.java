@@ -23,6 +23,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -34,11 +35,14 @@ public class ThrownNeedle extends AbstractArrow {
     private static final ItemStack DEFAULT_NEEDLE_STACK = new ItemStack(Registration.NEEDLE.get());
     private boolean dealtDamage;
 
-    public ThrownNeedle(EntityType<? extends ThrownNeedle> type, Level level) {
-        super(type, level, DEFAULT_NEEDLE_STACK);
+    public ThrownNeedle(EntityType<? extends ThrownNeedle> p_37561_, Level p_37562_) {
+        super(p_37561_, p_37562_);
+        this.pickup = Pickup.DISALLOWED;
     }
-    public ThrownNeedle(EntityType<? extends ThrownNeedle> type, LivingEntity owner, Level level) {
-        super(type, owner, level, DEFAULT_NEEDLE_STACK);
+
+    public ThrownNeedle(LivingEntity livingEntity, Level level) {
+        super(Registration.THROWN_NEEDLE.get(), livingEntity, level);
+        this.pickup = Pickup.DISALLOWED;
     }
 
     public void tick() {
@@ -48,63 +52,75 @@ public class ThrownNeedle extends AbstractArrow {
         super.tick();
     }
 
+    private boolean isAcceptibleReturnOwner() {
+        Entity $$0 = this.getOwner();
+        if ($$0 != null && $$0.isAlive()) {
+            return !($$0 instanceof ServerPlayer) || !$$0.isSpectator();
+        } else {
+            return false;
+        }
+    }
+
+    protected ItemStack getPickupItem() {
+        return DEFAULT_NEEDLE_STACK.copy();
+    }
+
     @Nullable
     protected EntityHitResult findHitEntity(Vec3 p_37575_, Vec3 p_37576_) {
         return this.dealtDamage ? null : super.findHitEntity(p_37575_, p_37576_);
     }
 
-    protected void onHitEntity(EntityHitResult result) {
-        Entity entity = result.getEntity();
-        float f = 8.0F;
-        if (entity instanceof LivingEntity livingentity) {
-            f += EnchantmentHelper.getDamageBonus(this.getPickupItemStackOrigin(), livingentity.getMobType());
+    protected void onHitEntity(EntityHitResult p_37573_) {
+        Entity victim = p_37573_.getEntity();
+        float $$2 = 8.0F;
+        if (victim instanceof LivingEntity $$3) {
+            $$2 += EnchantmentHelper.getDamageBonus(DEFAULT_NEEDLE_STACK, $$3.getMobType());
         }
 
         Entity owner = this.getOwner();
-        DamageSource damagesource = this.damageSources().trident(this, (Entity)(owner == null ? this : owner));
+        DamageSource $$5 = this.damageSources().trident(this, (Entity)(owner == null ? this : owner));
         this.dealtDamage = true;
-        SoundEvent soundevent = SoundEvents.TRIDENT_HIT;
-        if (entity.hurt(damagesource, f)) {
-            if (entity.getType() == EntityType.ENDERMAN) {
+        SoundEvent $$6 = SoundEvents.TRIDENT_HIT;
+        if (victim.hurt($$5, $$2)) {
+            if (victim.getType() == EntityType.ENDERMAN) {
                 return;
             }
 
-            if(owner instanceof Player player) {
-                // Send message to the thrower
-                player.sendSystemMessage(Component.translatable("item.slugcraft.needle.hit", entity.getName()));
-                // Send message to the target, if they're a player
-                if(entity instanceof Player target) {
+            if (victim instanceof LivingEntity) {
+                LivingEntity $$7 = (LivingEntity)victim;
+                if (owner instanceof LivingEntity) {
+                    EnchantmentHelper.doPostHurtEffects($$7, owner);
+                    EnchantmentHelper.doPostDamageEffects((LivingEntity)owner, $$7);
+                }
+
+                // Grant buffs to the owner
+                if(owner instanceof Player player && victim instanceof Player target) {
+                    // Send message to the thrower
+                    player.sendSystemMessage(Component.translatable("item.slugcraft.needle.hit", victim.getName()));
+
+                    // Send message to the target, if they're a player
                     target.sendSystemMessage(Component.translatable("item.slugcraft.needle.receive_hit"));
                     // Slow the target
                     target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20*5, 1));
-                }
-                // Add absorption and speed to the thrower
-                player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, -1, 2));
-                player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 20*30, 1));
-            }
 
-            if (entity instanceof LivingEntity) {
-                LivingEntity livingentity1 = (LivingEntity)entity;
-                if (owner instanceof LivingEntity) {
-                    EnchantmentHelper.doPostHurtEffects(livingentity1, owner);
-                    EnchantmentHelper.doPostDamageEffects((LivingEntity)owner, livingentity1);
+                    // Add absorption and speed to the thrower
+                    player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, -1, 2));
+                    player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 20*30, 1));
+                    player.getFoodData().setFoodLevel(20);
                 }
 
-                this.doPostHurtEffects(livingentity1);
+                this.doPostHurtEffects($$7);
             }
-        } else if (entity.getType().is(EntityTypeTags.DEFLECTS_TRIDENTS)) {
-            this.deflect();
-            return;
         }
 
-        this.setDeltaMovement(this.getDeltaMovement().multiply(-0.01D, -0.1D, -0.01D));
-        float f1 = 1.0F;
+        this.setDeltaMovement(this.getDeltaMovement().multiply(-0.01, -0.1, -0.01));
+        float $$8 = 1.0F;
 
-        this.playSound(soundevent, f1, 1.0F);
+        this.playSound($$6, $$8, 1.0F);
     }
 
     protected boolean tryPickup(Player p_150196_) {
-        return false;
+        return super.tryPickup(p_150196_) || this.isNoPhysics() && this.ownedBy(p_150196_) && p_150196_.getInventory().add(this.getPickupItem());
     }
 
     protected SoundEvent getDefaultHitGroundSoundEvent() {
@@ -129,7 +145,7 @@ public class ThrownNeedle extends AbstractArrow {
     }
 
     public void tickDespawn() {
-        if (this.pickup != AbstractArrow.Pickup.ALLOWED) {
+        if (this.pickup != Pickup.ALLOWED) {
             super.tickDespawn();
         }
     }

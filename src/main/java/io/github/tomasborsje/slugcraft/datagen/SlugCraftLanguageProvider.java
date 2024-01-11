@@ -39,20 +39,45 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
         add("item.slugcraft.needle.receive_hit", "§5§lYou were struck by a needle!");
         add("slugcraft.needle_description", "Throw at an enemy to slow them, gaining speed and an absorption shield.");
         add("message.slugcraft.quickfire.needle_gained", "§5§lYou created a needle!");
-        add("slugcraft.spearmaster_power", "Gain a throwable needle every 30 seconds.");
-        add("slugcraft.spearmaster_power_two", "Hitting a player with a needle grants speed and an absorption shield.");
-        add("slugcraft.spearmaster_haiku_one", "§8§oA master of spears");
-        add("slugcraft.spearmaster_haiku_two", "§8§oA master of the hunt");
-        add("slugcraft.spearmaster_haiku_three", "§8§oA master of time");
+        add("slugcraft.spearmaster_power", "Gain a throwable needle every 30 seconds, up to three.");
+        add("slugcraft.spearmaster_power_two", "Hitting a player with a needle grants speed, an absorption shield, and fills your food.");
+        add("slugcraft.spearmaster_haiku_one", "§8§oA resourceful being");
+        add("slugcraft.spearmaster_haiku_two", "§8§oCreate your own vicious weapons");
+        add("slugcraft.spearmaster_haiku_three", "§8§oFeed on their lifeforce");
+        // Artificer
+        add(Registration.ARTIFICER_SOUL.get(), "§c§lSoul of the Artificer");
+        add("slugcraft.artificer_power", "Press space while in the air to launch yourself.");
+        add("slugcraft.artificer_power_two", "Any spears you pick up automatically become §cexplosive.");
+        add("slugcraft.artificer_haiku_one", "§8§oA burning vengeance");
+        add("slugcraft.artificer_haiku_two", "§8§oBringing destruction and death");
+        add("slugcraft.artificer_haiku_three", "§8§oDon't get in her way");
+        // Saint
+        add(Registration.SAINT_SOUL.get(), "§2§lSoul of the Saint");
+        add("slugcraft.saint_power", "You can grapple by right clicking while crouching.");
+        add("slugcraft.saint_power_two", "After 15 minutes you §2§lAscend§r, gaining bursts of flight and permanent regeneration.");
+        add("slugcraft.saint_haiku_one", "§8§oAnchored to this world");
+        add("slugcraft.saint_haiku_two", "§8§oThe beginning and the end");
+        add("slugcraft.saint_haiku_three", "§8§oApotheosis");
+        // Gourmand
+        add(Registration.GOURMAND_SOUL.get(), "§6§lSoul of the Gourmand");
+        add("slugcraft.gourmand_power", "You can eat rotten flesh without getting hungry.");
+        add("slugcraft.gourmand_power_two", "You can eat any food instantly.");
+        add("slugcraft.gourmand_haiku_one", "§8§oA hunger for flesh");
+        add("slugcraft.gourmand_haiku_two", "§8§oA hunger for the living");
+        add("slugcraft.gourmand_haiku_three", "§8§oA hunger for life");
         // Spears
         add(Registration.EXPLOSIVE_SPEAR.get(), "§cExplosive Spear");
         add("slugcraft.explosive_spear_description", "A spear that explodes on impact.");
         add(Registration.SPEAR.get(), "Spear");
         add("slugcraft.spear_description", "A spear that can be thrown.");
-
+        // Creative tab
+        add("itemGroup.slugcraft", "SlugCraft");
         // Effects
         add(Registration.ROTTING.get(), "Rotting");
         add("message.slugcraft.rotting", "§8You are rotting away...");
         add("message.slugcraft.rotting_final", "§8§lYou're out of time...");
+        // Quickfire
+        add("message.slugcraft.quickfire.round_start", "§b§lThe round has begun!");
+        add("message.slugcraft.quickfire.round_end", "§b§lRound over! §b§l%s won!");
     }
 }

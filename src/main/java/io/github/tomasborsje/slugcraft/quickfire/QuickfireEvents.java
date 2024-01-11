@@ -101,6 +101,10 @@ public class QuickfireEvents {
     public static void OnKeyPress(InputEvent.Key event) {
         // Check if the space bar was pressed
         if(event.getKey() == 32 && event.getAction() == InputConstants.PRESS) {
+            // Check player is holding artificer soul in offhand
+            if(Minecraft.getInstance().player != null && Minecraft.getInstance().player.getInventory().getItem(Inventory.SLOT_OFFHAND).getItem() != Registration.ARTIFICER_SOUL.get()) {
+                return;
+            }
             LocalPlayer player = Minecraft.getInstance().player;
             // If the player is not null, alive, and grounded
             if(player != null && player.isAlive() && !player.verticalCollisionBelow && canArtificerDoubleJump && artificerJumpTolerance < 500) {

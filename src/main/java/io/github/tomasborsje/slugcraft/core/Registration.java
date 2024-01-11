@@ -9,17 +9,27 @@ import io.github.tomasborsje.slugcraft.entities.ThrownSpear;
 import io.github.tomasborsje.slugcraft.models.ExplosiveSpearModel;
 import io.github.tomasborsje.slugcraft.models.NeedleModel;
 import io.github.tomasborsje.slugcraft.models.SpearModel;
+import io.github.tomasborsje.slugcraft.particle.HardRainParticle;
 import io.github.tomasborsje.slugcraft.renderers.ThrownExplosiveSpearRenderer;
 import io.github.tomasborsje.slugcraft.renderers.ThrownNeedleRenderer;
 import io.github.tomasborsje.slugcraft.items.*;
 import io.github.tomasborsje.slugcraft.quickfire.IQuickfireCapability;
 import io.github.tomasborsje.slugcraft.renderers.ThrownSpearRenderer;
+import net.minecraft.client.resources.sounds.Sound;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -33,6 +43,10 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+
 public class Registration {
 
     public static Item.Properties ITEM_PROPERTIES = new Item.Properties();
@@ -41,6 +55,22 @@ public class Registration {
     public static final DeferredRegister<MobEffect> EFFECTS = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, SlugCraft.MODID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, SlugCraft.MODID);
     public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, SlugCraft.MODID);
+    public static final DeferredRegister<CreativeModeTab> CREATIVE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, SlugCraft.MODID);
+    public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, SlugCraft.MODID);
+    public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, SlugCraft.MODID);
+    public static final List<Supplier<? extends ItemLike>> SLUGCRAFT_TAB_ITEMS = new ArrayList<>();
+    public static <T extends Item> RegistryObject<T> addToTab(RegistryObject<T> itemLike) {
+        SLUGCRAFT_TAB_ITEMS.add(itemLike);
+        return itemLike;
+    }
+
+    // Sounds
+    private static RegistryObject<SoundEvent> registerSoundEvent(String name) {
+        ResourceLocation id = new ResourceLocation(SlugCraft.MODID, name);
+        return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(id));
+    }
+    public static final RegistryObject<SoundEvent> THREAT_GARBAGE_WASTES = registerSoundEvent("threat_garbage_wastes");
+
     // Entities
     public static final RegistryObject<EntityType<ThrownNeedle>> THROWN_NEEDLE = ENTITIES.register("thrown_needle",
             () -> EntityType.Builder.<ThrownNeedle>of(ThrownNeedle::new, MobCategory.MISC)
@@ -63,41 +93,52 @@ public class Registration {
                     .updateInterval(5)
                     .build("slugcraft:thrown_explosive_spear"));
 
-
-
     // Blocks
     public static final RegistryObject<SimpleBlock> SIMPLE_BLOCK = BLOCKS.register("simple_block", SimpleBlock::new);
     public static final RegistryObject<Item> SIMPLE_BLOCK_ITEM = ITEMS.register("simple_block", () -> new BlockItem(SIMPLE_BLOCK.get(), new Item.Properties()));
 
     // Capabilities
     public static Capability<IQuickfireCapability> QUICKFIRE_HANDLER = CapabilityManager.get(new CapabilityToken<>(){});
+    // Particles
+    public static final RegistryObject<SimpleParticleType> HARD_RAIN_PARTICLE = PARTICLE_TYPES.register("hard_rain_particle", () -> new SimpleParticleType(true));
 
     // Items
-    public static final RegistryObject<HostWand> HOST_WAND = ITEMS.register("host_wand", HostWand::new);
+    public static final RegistryObject<HostWand> HOST_WAND = addToTab(ITEMS.register("host_wand", HostWand::new));
 
     // Souls
-    public static final RegistryObject<RivuletSoul> RIVULET_SOUL = ITEMS.register("rivulet_soul", RivuletSoul::new);
-    public static final RegistryObject<HunterSoul> HUNTER_SOUL = ITEMS.register("hunter_soul", HunterSoul::new);
-    public static final RegistryObject<SpearmasterSoul> SPEARMASTER_SOUL = ITEMS.register("spearmaster_soul", SpearmasterSoul::new);
-    public static final RegistryObject<Needle> NEEDLE = ITEMS.register("needle", Needle::new);
+    public static final RegistryObject<RivuletSoul> RIVULET_SOUL = addToTab(ITEMS.register("rivulet_soul", RivuletSoul::new));
+    public static final RegistryObject<HunterSoul> HUNTER_SOUL = addToTab(ITEMS.register("hunter_soul", HunterSoul::new));
+    public static final RegistryObject<SpearmasterSoul> SPEARMASTER_SOUL = addToTab(ITEMS.register("spearmaster_soul", SpearmasterSoul::new));
+    public static final RegistryObject<ArtificerSoul> ARTIFICER_SOUL = addToTab(ITEMS.register("artificer_soul", ArtificerSoul::new));
+    public static final RegistryObject<SaintSoul> SAINT_SOUL = addToTab(ITEMS.register("saint_soul", SaintSoul::new));
+    public static final RegistryObject<GourmandSoul> GOURMAND_SOUL = addToTab(ITEMS.register("gourmand_soul", GourmandSoul::new));
+    public static final RegistryObject<Item>[] SLUGCAT_SOULS = new RegistryObject[] {
+            RIVULET_SOUL,
+            HUNTER_SOUL,
+            SPEARMASTER_SOUL,
+            ARTIFICER_SOUL,
+            SAINT_SOUL,
+            GOURMAND_SOUL
+    };
+
     // Spears
-    public static final RegistryObject<Spear> SPEAR = ITEMS.register("spear", Spear::new);
-    public static final RegistryObject<ExplosiveSpear> EXPLOSIVE_SPEAR = ITEMS.register("explosive_spear", ExplosiveSpear::new);
+    public static final RegistryObject<Needle> NEEDLE = addToTab(ITEMS.register("needle", Needle::new));
+    public static final RegistryObject<Spear> SPEAR = addToTab(ITEMS.register("spear", Spear::new));
+    public static final RegistryObject<ExplosiveSpear> EXPLOSIVE_SPEAR = addToTab(ITEMS.register("explosive_spear", ExplosiveSpear::new));
+
+    // Creative mode tab
+    public static final RegistryObject<CreativeModeTab> EXAMPLE_TAB = CREATIVE_TABS.register("slugcraft_tab",
+            () -> CreativeModeTab.builder()
+                    .title(Component.translatable("itemGroup.slugcraft"))
+                    .icon(RIVULET_SOUL.get()::getDefaultInstance)
+                    .displayItems((displayParams, output) ->
+                            SLUGCRAFT_TAB_ITEMS.forEach(itemLike -> output.accept(itemLike.get())))
+                    .withSearchBar()
+                    .build()
+    );
 
     // Effects
     public static final RegistryObject<MobEffect> ROTTING = EFFECTS.register("rotting", RottingEffect::new);
-
-    /**
-     * Add items to the creative tab.
-     */
-    static void addCreative(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
-            event.accept(SIMPLE_BLOCK_ITEM);
-            event.accept(RIVULET_SOUL);
-            event.accept(HUNTER_SOUL);
-            event.accept(HOST_WAND);
-        }
-    }
 
     @SubscribeEvent
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -121,6 +162,8 @@ public class Registration {
         ITEMS.register(modEventBus);
         BLOCK_ENTITIES.register(modEventBus);
         EFFECTS.register(modEventBus);
+        CREATIVE_TABS.register(modEventBus);
+        SOUND_EVENTS.register(modEventBus);
+        PARTICLE_TYPES.register(modEventBus);
     }
-
 }

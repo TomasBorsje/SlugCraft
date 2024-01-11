@@ -20,8 +20,4 @@ public class RottingEffect extends MobEffect {
     @Override
     public void applyEffectTick(LivingEntity pLivingEntity, int pAmplifier) { }
 
-    @Override
-    public boolean shouldApplyEffectTickThisTick(int pDuration, int pAmplifier) {
-        return false;
-    }
 }

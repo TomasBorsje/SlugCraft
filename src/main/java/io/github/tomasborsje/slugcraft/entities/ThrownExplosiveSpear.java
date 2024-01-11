@@ -28,69 +28,24 @@ import javax.annotation.Nullable;
 
 public class ThrownExplosiveSpear extends AbstractArrow {
     private static final ItemStack DEFAULT_EXPLOSIVE_SPEAR_STACK = new ItemStack(Registration.EXPLOSIVE_SPEAR.get());
+    private static final float SPEAR_DAMAGE = 8.0F;
+    private ItemStack thrownStack = DEFAULT_EXPLOSIVE_SPEAR_STACK;
     private boolean dealtDamage;
     private boolean exploded = false;
 
-    public ThrownExplosiveSpear(EntityType<? extends ThrownExplosiveSpear> type, Level level) {
-        super(type, level, DEFAULT_EXPLOSIVE_SPEAR_STACK);
-    }
-    public ThrownExplosiveSpear(EntityType<? extends ThrownExplosiveSpear> type, LivingEntity owner, Level level) {
-        super(type, owner, level, DEFAULT_EXPLOSIVE_SPEAR_STACK);
+    public ThrownExplosiveSpear(EntityType<? extends ThrownExplosiveSpear> p_37561_, Level p_37562_) {
+        super(p_37561_, p_37562_);
     }
 
-    @Nullable
-    protected EntityHitResult findHitEntity(Vec3 p_37575_, Vec3 p_37576_) {
-        return this.dealtDamage ? null : super.findHitEntity(p_37575_, p_37576_);
-    }
-
-    @Override
-    protected void onHitBlock(BlockHitResult p_36755_) {
-        super.onHitBlock(p_36755_);
-        explode();
-    }
-
-    protected void onHitEntity(EntityHitResult result) {
-        Entity entity = result.getEntity();
-        float f = 8.0F;
-        if (entity instanceof LivingEntity livingentity) {
-            f += EnchantmentHelper.getDamageBonus(this.getPickupItemStackOrigin(), livingentity.getMobType());
-        }
-
-        Entity owner = this.getOwner();
-        DamageSource damagesource = this.damageSources().trident(this, (Entity)(owner == null ? this : owner));
-        this.dealtDamage = true;
-        SoundEvent soundevent = SoundEvents.TRIDENT_HIT;
-        if (entity.hurt(damagesource, f)) {
-            if (entity.getType() == EntityType.ENDERMAN) {
-                return;
-            }
-
-            if (entity instanceof LivingEntity) {
-                LivingEntity livingentity1 = (LivingEntity)entity;
-                if (owner instanceof LivingEntity) {
-                    EnchantmentHelper.doPostHurtEffects(livingentity1, owner);
-                    EnchantmentHelper.doPostDamageEffects((LivingEntity)owner, livingentity1);
-                }
-
-                this.doPostHurtEffects(livingentity1);
-            }
-        } else if (entity.getType().is(EntityTypeTags.DEFLECTS_TRIDENTS)) {
-            this.deflect();
-            return;
-        }
-
-        this.setDeltaMovement(this.getDeltaMovement().multiply(-0.01D, -0.1D, -0.01D));
-        float f1 = 1.0F;
-
-        this.playSound(soundevent, f1, 1.0F);
-
-        explode();
+    public ThrownExplosiveSpear(Level p_37569_, LivingEntity p_37570_, ItemStack stack) {
+        super(Registration.THROWN_SPEAR.get(), p_37570_, p_37569_);
+        this.thrownStack = stack.copy();
     }
 
     private void explode() {
         if(!exploded) {
             exploded = true;
-            //
+            // Don't explode clientside
             if(level().isClientSide) {
                 return;
             }
@@ -99,8 +54,56 @@ public class ThrownExplosiveSpear extends AbstractArrow {
         }
     }
 
+    public void tick() {
+        if (this.inGroundTime > 1) {
+            explode();
+            this.dealtDamage = true;
+        }
+        super.tick();
+    }
+
+    protected ItemStack getPickupItem() {
+        return this.thrownStack.copy();
+    }
+
+    @Nullable
+    protected EntityHitResult findHitEntity(Vec3 p_37575_, Vec3 p_37576_) {
+        return this.dealtDamage ? null : super.findHitEntity(p_37575_, p_37576_);
+    }
+
+    protected void onHitEntity(EntityHitResult p_37573_) {
+        Entity $$1 = p_37573_.getEntity();
+
+        Entity $$4 = this.getOwner();
+        DamageSource $$5 = this.damageSources().trident(this, (Entity)($$4 == null ? this : $$4));
+        this.dealtDamage = true;
+        SoundEvent $$6 = SoundEvents.TRIDENT_HIT;
+        if ($$1.hurt($$5, SPEAR_DAMAGE)) {
+            if ($$1.getType() == EntityType.ENDERMAN) {
+                return;
+            }
+
+            if ($$1 instanceof LivingEntity) {
+                LivingEntity $$7 = (LivingEntity)$$1;
+                if ($$4 instanceof LivingEntity) {
+                    EnchantmentHelper.doPostHurtEffects($$7, $$4);
+                    EnchantmentHelper.doPostDamageEffects((LivingEntity)$$4, $$7);
+                }
+
+                this.doPostHurtEffects($$7);
+            }
+        }
+
+        this.setDeltaMovement(this.getDeltaMovement().multiply(-0.01, -0.1, -0.01));
+        float $$8 = 1.0F;
+
+        this.playSound($$6, $$8, 1.0F);
+
+        explode();
+    }
+
     protected boolean tryPickup(Player p_150196_) {
-        return false;
+        return super.tryPickup(p_150196_) || this.isNoPhysics() && this.ownedBy(p_150196_) && p_150196_.getInventory().add(this.getPickupItem());
     }
 
     protected SoundEvent getDefaultHitGroundSoundEvent() {

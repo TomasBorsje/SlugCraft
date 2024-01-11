@@ -1,0 +1,10 @@
+{
+  "threat_garbage_wastes": {
+    "subtitles": "sounds.slugcraft.threat_garbage_wastes",
+    "sounds": [
+      {
+        "name": "slugcraft:threat_garbage_wastes"
+      }
+    ]
+  }
+}

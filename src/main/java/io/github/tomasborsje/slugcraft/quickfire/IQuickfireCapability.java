@@ -11,6 +11,7 @@ public interface IQuickfireCapability {
     boolean getRoundRunning();
     void setRoundRunning(boolean value);
     void startRound(ServerLevel level, Player player);
+    void endRound(ServerLevel level, Player winner);
     void tickWorld(ServerLevel level);
     void postTickWorld();
 

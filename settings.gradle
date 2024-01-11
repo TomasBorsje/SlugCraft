@@ -5,16 +5,9 @@ pluginManagement {
             name = 'MinecraftForge'
             url = 'https://maven.minecraftforge.net/'
         }
-        maven { url = 'https://maven.parchmentmc.org' } // Parchment mappings
-        maven { // JEI
-            url "https://maven.blamejared.com"
-        }
-        maven { // TOP
-            url "https://maven.k-4u.nl"
-        }
     }
 }
 
 plugins {
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.7.0'
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.5.0'
 }
