@@ -53,18 +53,24 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
         add("slugcraft.artificer_haiku_three", "§8§oDon't get in her way");
         // Saint
         add(Registration.SAINT_SOUL.get(), "§2§lSoul of the Saint");
-        add("slugcraft.saint_power", "You can grapple by right clicking while crouching.");
-        add("slugcraft.saint_power_two", "After 15 minutes you §2§lAscend§r, gaining bursts of flight and permanent regeneration.");
-        add("slugcraft.saint_haiku_one", "§8§oAnchored to this world");
+        add("slugcraft.saint_power", "Gain a karma level every minute you go without damaging a living creature.");
+        add("slugcraft.saint_power_two", "At max karma you §2§lAscend§r, gaining bursts of flight and permanent regeneration.");
+        add("slugcraft.karma_level_reminder", "\uE000  \uE001  \uE002  \uE003  \uE004  \uE005  \uE006  \uE007  \uE008  \uE009");
+        add("message.slugcraft.quickfire.saint_hurt", "§r§f\uE000  §2§lYou  hurt  something!  Your  karma  level  has  been  reset.§r§f  \uE000");
+        add("message.slugcraft.quickfire.saint_ascend", "§r§f\uE009  §2§lYou  have  ascended!§r§f  \uE009");
+        add("message.slugcraft.quickfire.player_ascend", "§r§f\uE009  §2§l%s  has  ascended!§r§f  \uE009");
+        add("slugcraft.saint_haiku_one", "§8§oAnchored to the world");
         add("slugcraft.saint_haiku_two", "§8§oThe beginning and the end");
         add("slugcraft.saint_haiku_three", "§8§oApotheosis");
         // Gourmand
         add(Registration.GOURMAND_SOUL.get(), "§6§lSoul of the Gourmand");
-        add("slugcraft.gourmand_power", "You can eat rotten flesh without getting hungry.");
-        add("slugcraft.gourmand_power_two", "You can eat any food instantly.");
+        add("slugcraft.gourmand_power", "Crouch to eat your currently held item if it can't stack.");
+        add("slugcraft.gourmand_power_two", "Eat two items to craft a random item.");
         add("slugcraft.gourmand_haiku_one", "§8§oA hunger for flesh");
         add("slugcraft.gourmand_haiku_two", "§8§oA hunger for the living");
         add("slugcraft.gourmand_haiku_three", "§8§oA hunger for life");
+        add("message.slugcraft.gourmand.item_eaten", "§6§lYou ate %s§6§l!");
+        add("message.slugcraft.gourmand.item_craft", "§6§lYou crafted %s§6§l!");
         // Spears
         add(Registration.EXPLOSIVE_SPEAR.get(), "§cExplosive Spear");
         add("slugcraft.explosive_spear_description", "A spear that explodes on impact.");
@@ -76,6 +82,17 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
         add(Registration.ROTTING.get(), "Rotting");
         add("message.slugcraft.rotting", "§8You are rotting away...");
         add("message.slugcraft.rotting_final", "§8§lYou're out of time...");
+        // Karma Levels
+        add("message.slugcraft.karma_level.1", "\uE000");
+        add("message.slugcraft.karma_level.2", "\uE001");
+        add("message.slugcraft.karma_level.3", "\uE002");
+        add("message.slugcraft.karma_level.4", "\uE003");
+        add("message.slugcraft.karma_level.5", "\uE004");
+        add("message.slugcraft.karma_level.6", "\uE005");
+        add("message.slugcraft.karma_level.7", "\uE006");
+        add("message.slugcraft.karma_level.8", "\uE007");
+        add("message.slugcraft.karma_level.9", "\uE008");
+        add("message.slugcraft.karma_level.10", "\uE009");
         // Quickfire
         add("message.slugcraft.quickfire.round_start", "§b§lThe round has begun!");
         add("message.slugcraft.quickfire.round_end", "§b§lRound over! §b§l%s won!");

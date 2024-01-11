@@ -70,6 +70,7 @@ public class Registration {
         return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(id));
     }
     public static final RegistryObject<SoundEvent> THREAT_GARBAGE_WASTES = registerSoundEvent("threat_garbage_wastes");
+    public static final RegistryObject<SoundEvent> GAIN_KARMA = registerSoundEvent("gain_karma");
 
     // Entities
     public static final RegistryObject<EntityType<ThrownNeedle>> THROWN_NEEDLE = ENTITIES.register("thrown_needle",

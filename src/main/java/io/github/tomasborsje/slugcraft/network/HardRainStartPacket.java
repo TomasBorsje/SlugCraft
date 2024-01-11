@@ -16,15 +16,11 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.function.Supplier;
 
 public class HardRainStartPacket {
-    public HardRainStartPacket() {
-    }
+    public HardRainStartPacket() { }
 
-    public HardRainStartPacket(FriendlyByteBuf buffer) {
+    public HardRainStartPacket(FriendlyByteBuf buffer) { }
 
-    }
-
-    public void encode(FriendlyByteBuf friendlyByteBuf) {
-    }
+    public void encode(FriendlyByteBuf friendlyByteBuf) { }
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {

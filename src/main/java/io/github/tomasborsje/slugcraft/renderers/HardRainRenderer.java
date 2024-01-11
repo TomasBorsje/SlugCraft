@@ -29,8 +29,8 @@ public class HardRainRenderer extends DimensionSpecialEffects.OverworldEffects {
     public static boolean isHardRain = false;
     private static final ResourceLocation RAIN_LOCATION = new ResourceLocation("textures/environment/rain.png");
     private static final ResourceLocation SNOW_LOCATION = new ResourceLocation("textures/environment/snow.png");
-    private static final float RAIN_FALL_SPEED_MULTIPLIER = 2.77f;
-    private static final int RAIN_COUNT = 12;
+    private static final float RAIN_FALL_SPEED_MULTIPLIER = 3.23f;
+    private static final int RAIN_COUNT = 13;
     float[] rainSizeX = new float[1024];
     float[] rainSizeZ = new float[1024];
 
@@ -85,7 +85,7 @@ public class HardRainRenderer extends DimensionSpecialEffects.OverworldEffects {
                             blockpos$mutableblockpos.set((double) k1, camY, (double) j1);
                             Biome biome = (Biome) level.getBiome(blockpos$mutableblockpos).value();
                             if (biome.hasPrecipitation()) {
-                                int i2 = level.getHeight(Heightmap.Types.MOTION_BLOCKING, k1, j1);
+                                int i2 = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, k1, j1);
                                 int j2 = j - l;
                                 int k2 = j + l;
                                 if (j2 < i2) {

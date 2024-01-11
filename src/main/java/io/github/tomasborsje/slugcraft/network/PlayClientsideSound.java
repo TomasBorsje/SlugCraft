@@ -14,13 +14,13 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.function.Supplier;
 
-public class ThreatMusicStartPacket {
+public class PlayClientsideSound {
     private final ResourceLocation soundName;
-    public ThreatMusicStartPacket(ResourceLocation soundName) {
+    public PlayClientsideSound(ResourceLocation soundName) {
          this.soundName = soundName;
     }
 
-    public ThreatMusicStartPacket(FriendlyByteBuf buffer) {
+    public PlayClientsideSound(FriendlyByteBuf buffer) {
         this.soundName = buffer.readResourceLocation();
     }
 
@@ -31,7 +31,7 @@ public class ThreatMusicStartPacket {
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-                SlugCraft.LOGGER.info("CLIENT: Received threat music start packet");
+                SlugCraft.LOGGER.info("CLIENT: Playing clientside sound with resource location " + soundName);
                 SoundEvent sound = ForgeRegistries.SOUND_EVENTS.getValue(soundName);
                 // Get instance and stop threat music sound
                 if (Minecraft.getInstance().player != null && sound != null) {

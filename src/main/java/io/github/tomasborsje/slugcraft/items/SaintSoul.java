@@ -1,7 +1,11 @@
 package io.github.tomasborsje.slugcraft.items;
 
+import io.github.tomasborsje.slugcraft.SlugCraft;
 import io.github.tomasborsje.slugcraft.core.Registration;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -28,6 +32,8 @@ public class SaintSoul extends Item {
     public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
         pTooltipComponents.add(Component.translatable("slugcraft.saint_power"));
         pTooltipComponents.add(Component.translatable("slugcraft.saint_power_two"));
+        pTooltipComponents.add(Component.literal(""));
+        pTooltipComponents.add(Component.translatable("slugcraft.karma_level_reminder").withStyle(Style.EMPTY.withFont(new ResourceLocation(SlugCraft.MODID, "slugcraft_font"))));
         pTooltipComponents.add(Component.literal(""));
         pTooltipComponents.add(Component.translatable("slugcraft.saint_haiku_one"));
         pTooltipComponents.add(Component.translatable("slugcraft.saint_haiku_two"));
