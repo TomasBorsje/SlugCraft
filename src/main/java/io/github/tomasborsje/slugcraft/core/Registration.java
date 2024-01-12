@@ -9,13 +9,12 @@ import io.github.tomasborsje.slugcraft.entities.ThrownSpear;
 import io.github.tomasborsje.slugcraft.models.ExplosiveSpearModel;
 import io.github.tomasborsje.slugcraft.models.NeedleModel;
 import io.github.tomasborsje.slugcraft.models.SpearModel;
-import io.github.tomasborsje.slugcraft.particle.HardRainParticle;
+import io.github.tomasborsje.slugcraft.quickfire.StartRoundCommand;
 import io.github.tomasborsje.slugcraft.renderers.ThrownExplosiveSpearRenderer;
 import io.github.tomasborsje.slugcraft.renderers.ThrownNeedleRenderer;
 import io.github.tomasborsje.slugcraft.items.*;
 import io.github.tomasborsje.slugcraft.quickfire.IQuickfireCapability;
 import io.github.tomasborsje.slugcraft.renderers.ThrownSpearRenderer;
-import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
@@ -27,7 +26,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
@@ -36,7 +34,7 @@ import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.DeferredRegister;
@@ -100,8 +98,6 @@ public class Registration {
 
     // Capabilities
     public static Capability<IQuickfireCapability> QUICKFIRE_HANDLER = CapabilityManager.get(new CapabilityToken<>(){});
-    // Particles
-    public static final RegistryObject<SimpleParticleType> HARD_RAIN_PARTICLE = PARTICLE_TYPES.register("hard_rain_particle", () -> new SimpleParticleType(true));
 
     // Items
     public static final RegistryObject<HostWand> HOST_WAND = addToTab(ITEMS.register("host_wand", HostWand::new));
@@ -128,7 +124,7 @@ public class Registration {
     public static final RegistryObject<ExplosiveSpear> EXPLOSIVE_SPEAR = addToTab(ITEMS.register("explosive_spear", ExplosiveSpear::new));
 
     // Creative mode tab
-    public static final RegistryObject<CreativeModeTab> EXAMPLE_TAB = CREATIVE_TABS.register("slugcraft_tab",
+    public static final RegistryObject<CreativeModeTab> CREATIVE_TAB = CREATIVE_TABS.register("slugcraft_tab",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.slugcraft"))
                     .icon(RIVULET_SOUL.get()::getDefaultInstance)
@@ -155,6 +151,12 @@ public class Registration {
         event.registerLayerDefinition(NeedleModel.LAYER_LOCATION, NeedleModel::createBodyLayer);
         event.registerLayerDefinition(ExplosiveSpearModel.LAYER_LOCATION, ExplosiveSpearModel::createBodyLayer);
         event.registerLayerDefinition(SpearModel.LAYER_LOCATION, SpearModel::createBodyLayer);
+    }
+
+    @SubscribeEvent
+    public static void registerCommands(RegisterCommandsEvent event) {
+        SlugCraft.LOGGER.info("Registering Slugcraft commands");
+        StartRoundCommand.register(event.getDispatcher());
     }
 
     public static void init(IEventBus modEventBus) {

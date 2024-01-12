@@ -56,8 +56,8 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
         add("slugcraft.saint_power", "Gain a karma level every minute you go without damaging a living creature.");
         add("slugcraft.saint_power_two", "At max karma you §2§lAscend§r, gaining bursts of flight and permanent regeneration.");
         add("slugcraft.karma_level_reminder", "\uE000  \uE001  \uE002  \uE003  \uE004  \uE005  \uE006  \uE007  \uE008  \uE009");
-        add("message.slugcraft.quickfire.saint_hurt", "§r§f\uE000  §2§lYou  hurt  something!  Your  karma  level  has  been  reset.§r§f  \uE000");
-        add("message.slugcraft.quickfire.saint_ascend", "§r§f\uE009  §2§lYou  have  ascended!§r§f  \uE009");
+        add("message.slugcraft.quickfire.saint_hurt", "§r§f\uE000  §2§lYou  hurt  something!  Your  karma  level  has  droppedq.§r§f  \uE000");
+        add("message.slugcraft.quickfire.saint_ascend", "§2You have ascended!");
         add("message.slugcraft.quickfire.player_ascend", "§r§f\uE009  §2§l%s  has  ascended!§r§f  \uE009");
         add("slugcraft.saint_haiku_one", "§8§oAnchored to the world");
         add("slugcraft.saint_haiku_two", "§8§oThe beginning and the end");
@@ -96,5 +96,6 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
         // Quickfire
         add("message.slugcraft.quickfire.round_start", "§b§lThe round has begun!");
         add("message.slugcraft.quickfire.round_end", "§b§lRound over! §b§l%s won!");
+        add("message.slugcraft.quickfire.player_died", "§b§l%s has died!");
     }
 }

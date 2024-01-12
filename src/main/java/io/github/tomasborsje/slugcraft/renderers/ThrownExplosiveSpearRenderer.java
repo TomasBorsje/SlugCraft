@@ -22,8 +22,7 @@ public class ThrownExplosiveSpearRenderer extends EntityRenderer<ThrownExplosive
         super(context);
         this.model = new ExplosiveSpearModel(context.bakeLayer(ExplosiveSpearModel.LAYER_LOCATION));
     }
-
-
+    
     public void render(ThrownExplosiveSpear p_116111_, float p_116112_, float p_116113_, PoseStack p_116114_, MultiBufferSource p_116115_, int p_116116_) {
         p_116114_.pushPose();
         p_116114_.mulPose(Axis.YP.rotationDegrees(Mth.lerp(p_116113_, p_116111_.yRotO, p_116111_.getYRot()) - 90.0F));

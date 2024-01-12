@@ -52,15 +52,6 @@ public class ThrownNeedle extends AbstractArrow {
         super.tick();
     }
 
-    private boolean isAcceptibleReturnOwner() {
-        Entity $$0 = this.getOwner();
-        if ($$0 != null && $$0.isAlive()) {
-            return !($$0 instanceof ServerPlayer) || !$$0.isSpectator();
-        } else {
-            return false;
-        }
-    }
-
     protected ItemStack getPickupItem() {
         return DEFAULT_NEEDLE_STACK.copy();
     }
@@ -72,7 +63,7 @@ public class ThrownNeedle extends AbstractArrow {
 
     protected void onHitEntity(EntityHitResult p_37573_) {
         Entity victim = p_37573_.getEntity();
-        float $$2 = 8.0F;
+        float $$2 = 7.0F;
         if (victim instanceof LivingEntity $$3) {
             $$2 += EnchantmentHelper.getDamageBonus(DEFAULT_NEEDLE_STACK, $$3.getMobType());
         }
@@ -99,7 +90,8 @@ public class ThrownNeedle extends AbstractArrow {
                     player.sendSystemMessage(Component.translatable("item.slugcraft.needle.hit", victim.getName()));
 
                     // Send message to the target, if they're a player
-                    target.sendSystemMessage(Component.translatable("item.slugcraft.needle.receive_hit"));
+                    target.sendSystemMessage(Component.translatable("item.slugcraft.needle.receive_hit", player.getName()));
+
                     // Slow the target
                     target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20*5, 1));
 

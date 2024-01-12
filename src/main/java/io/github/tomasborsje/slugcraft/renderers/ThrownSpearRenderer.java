@@ -6,6 +6,7 @@ import com.mojang.math.Axis;
 import io.github.tomasborsje.slugcraft.SlugCraft;
 import io.github.tomasborsje.slugcraft.entities.ThrownNeedle;
 import io.github.tomasborsje.slugcraft.entities.ThrownSpear;
+import io.github.tomasborsje.slugcraft.items.Spear;
 import io.github.tomasborsje.slugcraft.models.NeedleModel;
 import io.github.tomasborsje.slugcraft.models.SpearModel;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -22,7 +23,7 @@ public class ThrownSpearRenderer extends EntityRenderer<ThrownSpear> {
 
     public ThrownSpearRenderer(EntityRendererProvider.Context context) {
         super(context);
-        this.model = new SpearModel(context.bakeLayer(NeedleModel.LAYER_LOCATION));
+        this.model = new SpearModel(context.bakeLayer(SpearModel.LAYER_LOCATION));
     }
 
     public void render(ThrownSpear p_116111_, float p_116112_, float p_116113_, PoseStack p_116114_, MultiBufferSource p_116115_, int p_116116_) {

@@ -8,10 +8,10 @@ import io.github.tomasborsje.slugcraft.network.PacketHandler;
 import io.github.tomasborsje.slugcraft.network.QuickfireRoundStartPacket;
 import io.github.tomasborsje.slugcraft.network.PlayClientsideSound;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
+import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -30,9 +30,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.LevelChunk;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -46,7 +48,7 @@ public class QuickfireCapability implements IQuickfireCapability {
     private final static int TICKS_PER_SPEARMASTER_NEEDLE = 20 * 30;
     private final static HashMap<Player, Integer> gourmandEatTimers = new HashMap<>();
     private final static HashMap<Player, Integer> gourmandEatCounts = new HashMap<>();
-    private final static HashMap<Player, Integer> karmaLevels = new HashMap<>();
+    public final static HashMap<Player, Integer> karmaLevels = new HashMap<>();
     private final Random random = new Random();
     private int roundTime = 0;
 
@@ -78,22 +80,37 @@ public class QuickfireCapability implements IQuickfireCapability {
         gourmandEatTimers.clear();
         gourmandEatCounts.clear();
         karmaLevels.clear();
+        QuickfireEvents.replacedChests.clear();
 
         // Show round prep title to all players
         executeCommand(level, "/title @a times 10t 40t 10t");
         executeCommand(level, "/title @a title \"Go!\"");
 
+        // Set weather to clear
+        level.setWeatherParameters(0, 6000, false, false);
+
+        // Set world spawn to start player's position
+        level.setDefaultSpawnPos(new BlockPos((int) startPlayer.getX(), (int) startPlayer.getY(), (int) startPlayer.getZ()), 0.0f);
+
         PacketHandler.sendToAll(new QuickfireRoundStartPacket());
 
         // For each player
         level.getServer().getPlayerList().getPlayers().forEach(player -> {
-
             // Clear effects and inventory
             player.removeAllEffects();
             player.getInventory().clearContent();
+
+            player.getAbilities().mayfly = false;
+            player.onUpdateAbilities();
+
             // Give a random Slugcat soul into the offhand
             Item slugcatSoul = SLUGCAT_SOULS[random.nextInt(SLUGCAT_SOULS.length)].get();
             player.getInventory().setItem(Inventory.SLOT_OFFHAND, new ItemStack(slugcatSoul));
+
+            // Remove the max health modifier from Rotting
+            if(player.getAttribute(Attributes.MAX_HEALTH) != null) {
+                player.getAttribute(Attributes.MAX_HEALTH).removeModifier(rotLevelUUID);
+            }
 
             // Set player's subtitle to their current soul
             executeCommand(level, "/title " + player.getName().getString() + " subtitle \""+Component.translatable(slugcatSoul.getDescriptionId()).getString()+"\"");
@@ -119,7 +136,10 @@ public class QuickfireCapability implements IQuickfireCapability {
                 // Replace all chests with diamond blocks
                 for (BlockPos pos : chunk.getBlockEntitiesPos()) {
                     if (level.getBlockState(pos).is(Blocks.CHEST)) {
-                        level.setBlockAndUpdate(pos, Blocks.DIAMOND_BLOCK.defaultBlockState());
+                        //ChestBlockEntity newChest = new ChestBlockEntity(pos, Blocks.CHEST.defaultBlockState());
+                        //newChest.setLootTable(new ResourceLocation("minecraft", "chests/end_city_treasure"), random.nextLong());
+                        // Add the new chest to the level
+                        //level.setBlockEntity(newChest);
                     }
                 }
             }
@@ -141,6 +161,11 @@ public class QuickfireCapability implements IQuickfireCapability {
         border.setDamagePerBlock(0.2);
         setRoundRunning(true);
     }
+    
+    private boolean isAlive(ServerPlayer player) {
+        // Check the player is in survival and alive
+        return player.gameMode.isSurvival() && player.isAlive();
+    }
 
     @Override
     public void tickWorld(ServerLevel level) {
@@ -149,15 +174,17 @@ public class QuickfireCapability implements IQuickfireCapability {
             // Check if there is only 1 player alive
             List<ServerPlayer> livingPlayers = new ArrayList<>();
             for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
-                if (player.isAlive()) {
+                if (isAlive(player)) {
                     livingPlayers.add(player);
                 }
             }
             // If only 1 living player remains, end the round
-            if (livingPlayers.size() == 2) {
+            if (livingPlayers.size() == 2 || livingPlayers.isEmpty()) {
                 // Show round end title to all players
+                if(!livingPlayers.isEmpty()) {
+                    executeCommand(level, "/title @a subtitle \"" + livingPlayers.get(0).getName().getString() + " wins!\"");
+                }
                 executeCommand(level, "/title @a title \"Round over!\"");
-                executeCommand(level, "/title @a subtitle \"" + livingPlayers.get(0).getName().getString() + " wins!\"");
 
                 endRound(level, livingPlayers.get(0));
                 return;
@@ -173,7 +200,7 @@ public class QuickfireCapability implements IQuickfireCapability {
                 ItemStack offhand = player.getInventory().getItem(Inventory.SLOT_OFFHAND);
 
                 // Check for rotting players
-                if (roundTime % TICKS_PER_HUNTER_ROT == 0 && player.hasEffect(Registration.ROTTING.get()) && player.isAlive()) {
+                if (roundTime % TICKS_PER_HUNTER_ROT == 0 && player.hasEffect(Registration.ROTTING.get()) && isAlive(player)) {
                     // If so, rot the player
                     rotPlayer(player);
                 }
@@ -189,7 +216,7 @@ public class QuickfireCapability implements IQuickfireCapability {
                     }
                 // Spearmaster
                 } else if (offhand.getItem() == Registration.SPEARMASTER_SOUL.get()) {
-                    if (roundTime % TICKS_PER_SPEARMASTER_NEEDLE == 0) {
+                    if (roundTime % TICKS_PER_SPEARMASTER_NEEDLE == 0 && isAlive(player)) {
                         // Check the player only has 2 or fewer needles
                         int needleCount = 0;
                         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
@@ -231,19 +258,25 @@ public class QuickfireCapability implements IQuickfireCapability {
                             }
                             // Otherwise, if the player is at level 10, send them a message saying they've ascended
                             else {
+                                // Grant creative flight
+                                player.getAbilities().mayfly = true;
+                                player.onUpdateAbilities();
+                                // Grant regeneration
+                                player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, -1, 0));
+
                                 player.connection.send(new ClientboundClearTitlesPacket(true));
+                                player.connection.send(new ClientboundSetSubtitleTextPacket(Component.translatable("message.slugcraft.quickfire.saint_ascend")));
                                 player.connection.send(new ClientboundSetTitleTextPacket(Component.translatable("message.slugcraft.karma_level.10").withStyle(Style.EMPTY.withFont(new ResourceLocation(SlugCraft.MODID, "slugcraft_font")))));
-                                level.getServer().sendSystemMessage(Component.translatable("message.slugcraft.quickfire.player_ascend", player.getName().getString()).withStyle(Style.EMPTY.withFont(new ResourceLocation(SlugCraft.MODID, "slugcraft_font"))));
+                                broadcastMessage(level, Component.translatable("message.slugcraft.quickfire.player_ascend", player.getName().getString()).withStyle(Style.EMPTY.withFont(new ResourceLocation(SlugCraft.MODID, "slugcraft_font"))));
                             }
                         }
                     }
-
                 }
                 // Gourmand
                 if (offhand.getItem() == Registration.GOURMAND_SOUL.get()) {
                     // If the player is crouching, increment their gourmand timer by 1
                     ItemStack heldItem = player.getInventory().getSelected();
-                    if (player.isCrouching() && player.isAlive() && heldItem != ItemStack.EMPTY && heldItem.getItem().getMaxStackSize(heldItem) == 1) {
+                    if (player.isCrouching() && isAlive(player) && heldItem != ItemStack.EMPTY && heldItem.getItem().getMaxStackSize(heldItem) == 1) {
                         if (!gourmandEatTimers.containsKey(player)) {
                             gourmandEatTimers.put(player, 0);
                         }
@@ -255,12 +288,10 @@ public class QuickfireCapability implements IQuickfireCapability {
                             if (eatTimer % 5 == 0) {
                                 level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.GENERIC_EAT, SoundSource.PLAYERS, 1.0f, 1.0f);
                             }
-                            // Create an eat particle every 3 ticks
-                            if (eatTimer % 3 == 0) {
-                                level.addParticle(ParticleTypes.CRIMSON_SPORE, player.getX(), player.getY() + player.getEyeHeight() - 0.05f, player.getZ(), 0, 0, 0);
-                            }
                             // If the player has eaten for 3 seconds, remove their current held main hand item and give them a spear
                             if (eatTimer == 3 * 20) {
+                                // Play burp sound
+                                level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 1.0f, 1.0f);
                                 // Remove current held item
                                 String eatenItemName = player.getInventory().getSelected().getHoverName().getString();
                                 player.getInventory().removeItem(player.getInventory().getSelected());
@@ -293,6 +324,12 @@ public class QuickfireCapability implements IQuickfireCapability {
         }
     }
 
+    public static void broadcastMessage(ServerLevel level, Component message) {
+        level.getServer().getPlayerList().getPlayers().forEach(player -> {
+            player.sendSystemMessage(message);
+        });
+    }
+
     private void doTimedEvents(ServerLevel level) {
         // Check if we have 5 minutes left
         if (roundTime == SlugCraftConfig.quickfireRoundTime*20 - 5 * 60 * 20) {
@@ -316,8 +353,8 @@ public class QuickfireCapability implements IQuickfireCapability {
         if (roundTime == SlugCraftConfig.quickfireRoundTime*20 + 10*20) {
             SlugCraft.LOGGER.info("10 seconds past round limit, starting hard rain + wither!");
             PacketHandler.sendToAll(new HardRainStartPacket());
-            for (Player player : level.getServer().getPlayerList().getPlayers()) {
-                if (player.isAlive()) {
+            for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
+                if (isAlive(player)) {
                     // Add wither and slowness 1
                     player.addEffect(new MobEffectInstance(MobEffects.WITHER, -1, 2));
                     player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, -1, 0));
@@ -326,7 +363,7 @@ public class QuickfireCapability implements IQuickfireCapability {
         }
     }
 
-    public void endRound(ServerLevel level, Player winner) {
+    public void endRound(ServerLevel level, @Nullable Player winner) {
         // Set roundRunning to false
         setRoundRunning(false);
 
@@ -334,9 +371,11 @@ public class QuickfireCapability implements IQuickfireCapability {
         level.getWorldBorder().setSize(SlugCraftConfig.worldBorderEndSize);
 
         // Iterate all players and send a round end message
-        level.getServer().getPlayerList().getPlayers().forEach(player -> {
-            player.sendSystemMessage(Component.translatable("message.slugcraft.quickfire.round_end", winner.getName().getString()));
-        });
+        if(winner != null) {
+            level.getServer().getPlayerList().getPlayers().forEach(player -> {
+                player.sendSystemMessage(Component.translatable("message.slugcraft.quickfire.round_end", winner.getName().getString()));
+            });
+        }
     }
 
     @Override

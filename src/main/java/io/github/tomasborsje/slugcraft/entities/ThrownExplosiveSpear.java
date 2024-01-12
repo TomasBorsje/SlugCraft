@@ -38,7 +38,7 @@ public class ThrownExplosiveSpear extends AbstractArrow {
     }
 
     public ThrownExplosiveSpear(Level p_37569_, LivingEntity p_37570_, ItemStack stack) {
-        super(Registration.THROWN_SPEAR.get(), p_37570_, p_37569_);
+        super(Registration.THROWN_EXPLOSIVE_SPEAR.get(), p_37570_, p_37569_);
         this.thrownStack = stack.copy();
     }
 
@@ -55,10 +55,6 @@ public class ThrownExplosiveSpear extends AbstractArrow {
     }
 
     public void tick() {
-        if (this.inGroundTime > 1) {
-            explode();
-            this.dealtDamage = true;
-        }
         super.tick();
     }
 
@@ -69,6 +65,12 @@ public class ThrownExplosiveSpear extends AbstractArrow {
     @Nullable
     protected EntityHitResult findHitEntity(Vec3 p_37575_, Vec3 p_37576_) {
         return this.dealtDamage ? null : super.findHitEntity(p_37575_, p_37576_);
+    }
+
+    @Override
+    protected void onHitBlock(BlockHitResult p_36755_) {
+        super.onHitBlock(p_36755_);
+        explode();
     }
 
     protected void onHitEntity(EntityHitResult p_37573_) {

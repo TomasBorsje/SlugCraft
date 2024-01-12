@@ -30,6 +30,7 @@ public class HardRainRenderer extends DimensionSpecialEffects.OverworldEffects {
     private static final ResourceLocation RAIN_LOCATION = new ResourceLocation("textures/environment/rain.png");
     private static final ResourceLocation SNOW_LOCATION = new ResourceLocation("textures/environment/snow.png");
     private static final float RAIN_FALL_SPEED_MULTIPLIER = 3.23f;
+    private static final float SNOW_FALL_SPEED_MULTIPLIER = 30f;
     private static final int RAIN_COUNT = 13;
     float[] rainSizeX = new float[1024];
     float[] rainSizeZ = new float[1024];
@@ -141,7 +142,7 @@ public class HardRainRenderer extends DimensionSpecialEffects.OverworldEffects {
                                             bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
                                         }
 
-                                        float f5 = -((float) (ticks & 511) + partialTick) / 512.0F;
+                                        float f5 = (-((float) (ticks & 511) + partialTick) / 512.0F) * SNOW_FALL_SPEED_MULTIPLIER;
                                         f6 = (float) (randomsource.nextDouble() + (double) f1 * 0.01 * (double) ((float) randomsource.nextGaussian()));
                                         float f7 = (float) (randomsource.nextDouble() + (double) (f1 * (float) randomsource.nextGaussian()) * 0.001);
                                         double d3 = (double) k1 + 0.5 - camX;
