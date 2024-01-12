@@ -27,6 +27,7 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -67,8 +68,15 @@ public class Registration {
         ResourceLocation id = new ResourceLocation(SlugCraft.MODID, name);
         return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(id));
     }
-    public static final RegistryObject<SoundEvent> THREAT_GARBAGE_WASTES = registerSoundEvent("threat_garbage_wastes");
     public static final RegistryObject<SoundEvent> GAIN_KARMA = registerSoundEvent("gain_karma");
+    public static final RegistryObject<SoundEvent> THREAT_GARBAGE_WASTES = registerSoundEvent("threat_garbage_wastes");
+    public static final RegistryObject<SoundEvent> THREAT_INDUSTRIAL_COMPLEX = registerSoundEvent("threat_industrial_complex");
+    public static final RegistryObject<SoundEvent> THREAT_OUTSKIRTS = registerSoundEvent("threat_outskirts");
+    public static final RegistryObject<SoundEvent>[] THREAT_MUSICS = new RegistryObject[] {
+            THREAT_GARBAGE_WASTES,
+            THREAT_INDUSTRIAL_COMPLEX,
+            THREAT_OUTSKIRTS
+    };
 
     // Entities
     public static final RegistryObject<EntityType<ThrownNeedle>> THROWN_NEEDLE = ENTITIES.register("thrown_needle",

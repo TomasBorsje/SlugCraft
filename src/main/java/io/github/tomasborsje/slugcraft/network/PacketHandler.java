@@ -25,16 +25,22 @@ public class PacketHandler {
                 .consumerMainThread(QuickfireRoundStartPacket::handle)
                 .add();
         // Threat music start, server to clients
-        INSTANCE.messageBuilder(PlayClientsideSound.class, id++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(PlayClientsideSound::encode)
-                .decoder(PlayClientsideSound::new)
-                .consumerMainThread(PlayClientsideSound::handle)
+        INSTANCE.messageBuilder(PlayClientsideSoundPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(PlayClientsideSoundPacket::encode)
+                .decoder(PlayClientsideSoundPacket::new)
+                .consumerMainThread(PlayClientsideSoundPacket::handle)
                 .add();
         // Hard rain start, server to clients
         INSTANCE.messageBuilder(HardRainStartPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(HardRainStartPacket::encode)
                 .decoder(HardRainStartPacket::new)
                 .consumerMainThread(HardRainStartPacket::handle)
+                .add();
+        // Start threat music
+        INSTANCE.messageBuilder(SetThreatMusicPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SetThreatMusicPacket::encode)
+                .decoder(SetThreatMusicPacket::new)
+                .consumerMainThread(SetThreatMusicPacket::handle)
                 .add();
     }
 

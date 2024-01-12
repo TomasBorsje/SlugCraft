@@ -26,10 +26,15 @@ public class SlugCraftConfig
             .comment("The time in seconds for Saint to gain a karma level.")
             .defineInRange("saintSecondsPerKarmaLevel", 5, 1, Integer.MAX_VALUE);
 
+    private static final ForgeConfigSpec.IntValue QUICKFIRE_GRACE_PERIOD_TIME = BUILDER
+            .comment("The time in seconds until the grace period ends.")
+            .defineInRange("quickfireGracePeriodTime", 60, 1, Integer.MAX_VALUE);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
     public static int worldBorderStartSize;
     public static int worldBorderEndSize;
     public static int quickfireRoundTime;
+    public static int quickfireGracePeriodTime;
     public static int saintSecondsPerKarmaLevel;
 
     @SubscribeEvent
@@ -39,6 +44,7 @@ public class SlugCraftConfig
         worldBorderStartSize = WORLD_BORDER_START_SIZE.get();
         worldBorderEndSize = WORLD_BORDER_END_SIZE.get();
         quickfireRoundTime = QUICKFIRE_ROUND_TIME.get();
+        quickfireGracePeriodTime = QUICKFIRE_GRACE_PERIOD_TIME.get();
         saintSecondsPerKarmaLevel = SAINT_SECONDS_PER_KARMA_LEVEL.get();
     }
 }

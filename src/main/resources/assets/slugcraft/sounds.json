@@ -7,6 +7,22 @@
       }
     ]
   },
+  "threat_outskirts": {
+    "subtitles": "sounds.slugcraft.threat_outskirts",
+    "sounds": [
+      {
+        "name": "slugcraft:threat_outskirts"
+      }
+    ]
+  },
+  "threat_industrial_complex": {
+    "subtitles": "sounds.slugcraft.threat_industrial_complex",
+    "sounds": [
+      {
+        "name": "slugcraft:threat_industrial_complex"
+      }
+    ]
+  },
   "gain_karma": {
     "subtitles": "sounds.slugcraft.gain_karma",
     "sounds": [

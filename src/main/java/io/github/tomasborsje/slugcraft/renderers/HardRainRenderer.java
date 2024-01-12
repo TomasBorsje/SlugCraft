@@ -30,7 +30,7 @@ public class HardRainRenderer extends DimensionSpecialEffects.OverworldEffects {
     private static final ResourceLocation RAIN_LOCATION = new ResourceLocation("textures/environment/rain.png");
     private static final ResourceLocation SNOW_LOCATION = new ResourceLocation("textures/environment/snow.png");
     private static final float RAIN_FALL_SPEED_MULTIPLIER = 3.23f;
-    private static final float SNOW_FALL_SPEED_MULTIPLIER = 30f;
+    private static final float SNOW_FALL_SPEED_MULTIPLIER = 50f;
     private static final int RAIN_COUNT = 13;
     float[] rainSizeX = new float[1024];
     float[] rainSizeZ = new float[1024];
@@ -47,7 +47,6 @@ public class HardRainRenderer extends DimensionSpecialEffects.OverworldEffects {
             }
         }
     }
-
 
     @Override
     public boolean renderSnowAndRain(ClientLevel level, int ticks, float partialTick, LightTexture lightTexture, double camX, double camY, double camZ) {

@@ -3,10 +3,7 @@ package io.github.tomasborsje.slugcraft.quickfire;
 import io.github.tomasborsje.slugcraft.SlugCraft;
 import io.github.tomasborsje.slugcraft.core.SlugCraftConfig;
 import io.github.tomasborsje.slugcraft.core.Registration;
-import io.github.tomasborsje.slugcraft.network.HardRainStartPacket;
-import io.github.tomasborsje.slugcraft.network.PacketHandler;
-import io.github.tomasborsje.slugcraft.network.QuickfireRoundStartPacket;
-import io.github.tomasborsje.slugcraft.network.PlayClientsideSound;
+import io.github.tomasborsje.slugcraft.network.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -29,10 +26,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.border.WorldBorder;
-import net.minecraft.world.level.chunk.LevelChunk;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
@@ -43,12 +37,12 @@ import static io.github.tomasborsje.slugcraft.core.Registration.SLUGCAT_SOULS;
 
 public class QuickfireCapability implements IQuickfireCapability {
     public boolean isRoundRunning = false;
+    public final static HashMap<Player, Integer> karmaLevels = new HashMap<>();
     private final static UUID rotLevelUUID = UUID.fromString("f186b657-e16b-448f-ad45-37186ee858e8");
     private final static int TICKS_PER_HUNTER_ROT = 20 * 60; // 1 minute
     private final static int TICKS_PER_SPEARMASTER_NEEDLE = 20 * 30;
     private final static HashMap<Player, Integer> gourmandEatTimers = new HashMap<>();
     private final static HashMap<Player, Integer> gourmandEatCounts = new HashMap<>();
-    public final static HashMap<Player, Integer> karmaLevels = new HashMap<>();
     private final Random random = new Random();
     private int roundTime = 0;
 
@@ -127,27 +121,28 @@ public class QuickfireCapability implements IQuickfireCapability {
             throw new RuntimeException(e);
         }
 
-        // For each chunk, replace all chests with diamond blocks
-        for (ChunkHolder chunkHolder : chunks) {
-            // Check if it exists, and get the LevelChunk through getTickingChunk if so:
-            if (chunkHolder != null) {
-                LevelChunk chunk = chunkHolder.getTickingChunk();
-                if (chunk == null) continue;
-                // Replace all chests with diamond blocks
-                for (BlockPos pos : chunk.getBlockEntitiesPos()) {
-                    if (level.getBlockState(pos).is(Blocks.CHEST)) {
-                        //ChestBlockEntity newChest = new ChestBlockEntity(pos, Blocks.CHEST.defaultBlockState());
-                        //newChest.setLootTable(new ResourceLocation("minecraft", "chests/end_city_treasure"), random.nextLong());
-                        // Add the new chest to the level
-                        //level.setBlockEntity(newChest);
-                    }
-                }
-            }
-        }
+//        // For each chunk, replace chests
+//        for (ChunkHolder chunkHolder : chunks) {
+//            // Check if it exists, and get the LevelChunk through getTickingChunk if so:
+//            if (chunkHolder != null) {
+//                LevelChunk chunk = chunkHolder.getTickingChunk();
+//                if (chunk == null) continue;
+//                // Replace all chests with diamond blocks
+//                for (BlockPos pos : chunk.getBlockEntitiesPos()) {
+//                    if (level.getBlockState(pos).is(Blocks.CHEST)) {
+//
+//                    }
+//                }
+//            }
+//        }
 
-        // Set world difficulty to peaceful then back to normal
+        // Teleport all players to the starting player
+        level.getServer().getPlayerList().getPlayers().forEach(player -> {
+            player.teleportTo(startPlayer.getX(), startPlayer.getY(), startPlayer.getZ());
+        });
+
+        // Set world difficulty to peaceful
         executeCommand(level, "/difficulty peaceful");
-        executeCommand(level, "/difficulty normal");
         // Delete all item entities
         executeCommand(level, "/kill @e[type=item]");
         // Set all player gamemodes to survival
@@ -184,16 +179,14 @@ public class QuickfireCapability implements IQuickfireCapability {
                 if(!livingPlayers.isEmpty()) {
                     executeCommand(level, "/title @a subtitle \"" + livingPlayers.get(0).getName().getString() + " wins!\"");
                 }
-                executeCommand(level, "/title @a title \"Round over!\"");
-
-                endRound(level, livingPlayers.get(0));
+                executeCommand(level, "/title @a title \"GG!\"");
+                endRound(level, livingPlayers.isEmpty() ? null : livingPlayers.get(0));
                 return;
             }
 
-            doTimedEvents(level);
-
             // Increment tickCount;
             roundTime++;
+            doTimedEvents(level);
 
             // For each player, check their offhand souls
             for (ServerPlayer player : livingPlayers) {
@@ -248,7 +241,7 @@ public class QuickfireCapability implements IQuickfireCapability {
                             karmaLevels.put(player, ++karmaLevel);
 
                             // Send play sound packet to play gain_karma sound
-                            PacketHandler.sendToAll(new PlayClientsideSound(Registration.GAIN_KARMA.getId()));
+                            PacketHandler.sendToAll(new PlayClientsideSoundPacket(Registration.GAIN_KARMA.getId()));
 
                             // If less than level 10, show a karma level title to the player
                             if(karmaLevel < 10) {
@@ -331,8 +324,15 @@ public class QuickfireCapability implements IQuickfireCapability {
     }
 
     private void doTimedEvents(ServerLevel level) {
+        // If we have reached the grace period time, set difficulty to normal again
+        if (roundTime == SlugCraftConfig.quickfireGracePeriodTime * 20) {
+            executeCommand(level, "/difficulty normal");
+            // Show all players a title
+            executeCommand(level, "/title @a title \"Grace period over!\"");
+        }
+
         // Check if we have 5 minutes left
-        if (roundTime == SlugCraftConfig.quickfireRoundTime*20 - 5 * 60 * 20) {
+        if (roundTime == SlugCraftConfig.quickfireRoundTime * 20 - 5 * 60 * 20) {
             // If so, display a title to all players
             executeCommand(level, "/title @a reset");
             executeCommand(level, "/title @a title \"5 minutes left!\"");
@@ -341,13 +341,17 @@ public class QuickfireCapability implements IQuickfireCapability {
         // If we have no time left, start the rain and threat music
         if (roundTime == SlugCraftConfig.quickfireRoundTime*20) {
             SlugCraft.LOGGER.info("No time left, playing threat music and starting rain!");
+            // Set time to night
+            executeCommand(level, "/time set night");
 
             executeCommand(level, "/title @a reset");
+            executeCommand(level, "/title @a times 10t 40t 10t");
             executeCommand(level, "/title @a title \"The rain has started...\"");
+
             // Start rain
             level.setWeatherParameters(0, 6000, true, false);
             // Iterate all players and play threat music
-            PacketHandler.sendToAll(new PlayClientsideSound(Registration.THREAT_GARBAGE_WASTES.getId()));
+            PacketHandler.sendToAll(new SetThreatMusicPacket(false));
         }
         // If we're 30 seconds past the round limit, apply wither
         if (roundTime == SlugCraftConfig.quickfireRoundTime*20 + 10*20) {

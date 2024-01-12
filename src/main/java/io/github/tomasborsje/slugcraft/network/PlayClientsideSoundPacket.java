@@ -3,6 +3,7 @@ package io.github.tomasborsje.slugcraft.network;
 import io.github.tomasborsje.slugcraft.SlugCraft;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.EntityBoundSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -14,13 +15,13 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.function.Supplier;
 
-public class PlayClientsideSound {
+public class PlayClientsideSoundPacket {
     private final ResourceLocation soundName;
-    public PlayClientsideSound(ResourceLocation soundName) {
+    public PlayClientsideSoundPacket(ResourceLocation soundName) {
          this.soundName = soundName;
     }
 
-    public PlayClientsideSound(FriendlyByteBuf buffer) {
+    public PlayClientsideSoundPacket(FriendlyByteBuf buffer) {
         this.soundName = buffer.readResourceLocation();
     }
 
@@ -29,15 +30,16 @@ public class PlayClientsideSound {
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-                SlugCraft.LOGGER.info("CLIENT: Playing clientside sound with resource location " + soundName);
-                SoundEvent sound = ForgeRegistries.SOUND_EVENTS.getValue(soundName);
-                // Get instance and stop threat music sound
-                if (Minecraft.getInstance().player != null && sound != null) {
-                    Minecraft.getInstance().getSoundManager().play(new EntityBoundSoundInstance(sound, SoundSource.RECORDS, 1.0F, 1.0F, Minecraft.getInstance().player, 0));
-                }
-            });
-        });
+        ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            SlugCraft.LOGGER.info("CLIENT: Playing clientside sound with resource location " + soundName);
+
+            // Play sound
+            float volume = 1.0f;
+            SoundEvent sound = ForgeRegistries.SOUND_EVENTS.getValue(soundName);
+            if (Minecraft.getInstance().player != null && sound != null) {
+                SoundInstance soundInstance = new EntityBoundSoundInstance(sound, SoundSource.RECORDS, volume, 1.0f, Minecraft.getInstance().player, 0);
+                Minecraft.getInstance().getSoundManager().play(soundInstance);
+            }
+        }));
     }
 }
