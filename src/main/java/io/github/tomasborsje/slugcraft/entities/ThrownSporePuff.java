@@ -26,7 +26,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 public class ThrownSporePuff extends ThrowableItemProjectile {
-    private final static float HURT_RADIUS = 6f;
+    private final static float HURT_RADIUS = 5.5f;
     public ThrownSporePuff(EntityType<? extends ThrownSporePuff> type, Level level) {
         super(type, level);
     }

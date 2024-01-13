@@ -45,7 +45,7 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
         add("slugcraft.spearmaster_haiku_two", "§8§oCreate your own vicious weapons");
         add("slugcraft.spearmaster_haiku_three", "§8§oFeed on their lifeforce");
         // Artificer
-        add(Registration.ARTIFICER_SOUL.get(), "§c§lSoul of the Artificer");
+        add(Registration.ARTIFICER_SOUL.get(), "§4§lSoul of the Artificer");
         add("slugcraft.artificer_power", "Press space while in the air to launch yourself.");
         add("slugcraft.artificer_power_two", "Any spears you pick up automatically become §cexplosive.");
         add("slugcraft.artificer_haiku_one", "§8§oA burning vengeance");

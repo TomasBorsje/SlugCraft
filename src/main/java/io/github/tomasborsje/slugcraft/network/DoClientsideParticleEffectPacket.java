@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 
 public class DoClientsideParticleEffectPacket {
     private final static double SMOKE_RADIUS = 1.5f;
-    private final static int SMOKE_COUNT = 70;
+    private final static int SMOKE_COUNT = 150;
     private final Random random = new Random();
     private final ParticleEffect effect;
     private final double x;
