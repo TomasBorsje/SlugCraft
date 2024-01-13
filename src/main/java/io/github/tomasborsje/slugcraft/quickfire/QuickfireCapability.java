@@ -36,18 +36,20 @@ import java.util.*;
 import static io.github.tomasborsje.slugcraft.core.Registration.SLUGCAT_SOULS;
 
 public class QuickfireCapability implements IQuickfireCapability {
-    public boolean isRoundRunning = false;
+    public static boolean isRoundRunning = false;
+    public static int roundTime = 0;
+    public final static float THREAT_MUSIC_DISTANCE = 13.0f;
+    public final static int THREAT_MUSIC_TIME = 15;
     public final static HashMap<Player, Integer> karmaLevels = new HashMap<>();
+    public final static HashMap<Player, Integer> remainingThreatMusicTicks = new HashMap<>();
     private final static UUID rotLevelUUID = UUID.fromString("f186b657-e16b-448f-ad45-37186ee858e8");
     private final static int TICKS_PER_HUNTER_ROT = 20 * 60; // 1 minute
     private final static int TICKS_PER_SPEARMASTER_NEEDLE = 20 * 30;
-    private final static float THREAT_MUSIC_DISTANCE = 13.0f;
-    public final static int THREAT_MUSIC_TIME = 20;
     private final static HashMap<Player, Integer> gourmandEatTimers = new HashMap<>();
     private final static HashMap<Player, Integer> gourmandEatCounts = new HashMap<>();
-    public final static HashMap<Player, Integer> remainingThreatMusicTicks = new HashMap<>();
     private final Random random = new Random();
-    private int roundTime = 0;
+    private boolean lastTickRoundRunning = false;
+
 
     // Use reflection to get the getChunks() method of ChunkMap
 //    Method getChunks;
@@ -168,6 +170,12 @@ public class QuickfireCapability implements IQuickfireCapability {
 
     @Override
     public void tickWorld(ServerLevel level) {
+        // If the round was running last tick but not this tick, end all threat musics again
+        // This stops threat music that started on the same tick the round ended
+        if(lastTickRoundRunning && !isRoundRunning) {
+            PacketHandler.sendToAll(new StopThreatMusicPacket());
+        }
+
         // If the round is running
         if (isRoundRunning) {
             // Check if there is only 1 player alive
@@ -320,6 +328,7 @@ public class QuickfireCapability implements IQuickfireCapability {
                 }
             }
         }
+        lastTickRoundRunning = isRoundRunning;
     }
 
     private void doProximityThreatMusic(ServerLevel level) {

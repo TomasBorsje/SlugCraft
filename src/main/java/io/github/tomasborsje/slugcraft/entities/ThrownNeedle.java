@@ -90,15 +90,18 @@ public class ThrownNeedle extends AbstractArrow {
                     this.buffed = true;
 
                     // Send message to the thrower
-                    player.sendSystemMessage(Component.translatable("item.slugcraft.needle.hit", victim.getName()));
+                    //player.sendSystemMessage(Component.translatable("item.slugcraft.needle.hit", victim.getName()));
 
                     // Send message to the target, if they're a player
-                    target.sendSystemMessage(Component.translatable("item.slugcraft.needle.receive_hit", player.getName()));
+                    //target.sendSystemMessage(Component.translatable("item.slugcraft.needle.receive_hit", player.getName()));
 
                     // Slow the target
                     target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20*10, 1));
 
-                    // Add absorption and speed to the thrower
+                    // Clear absoprtion and movement speed if they exist
+                    player.removeEffect(MobEffects.ABSORPTION);
+                    player.removeEffect(MobEffects.MOVEMENT_SPEED);
+                    // Add new absorption and speed to the thrower
                     player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, -1, 2));
                     player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 20*30, 1));
                     player.getFoodData().setFoodLevel(20);

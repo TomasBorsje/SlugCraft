@@ -49,6 +49,12 @@ public class PacketHandler {
                 .decoder(StopThreatMusicPacket::new)
                 .consumerMainThread(StopThreatMusicPacket::handle)
                 .add();
+        // Particle effect packets
+        INSTANCE.messageBuilder(DoClientsideParticleEffectPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(DoClientsideParticleEffectPacket::encode)
+                .decoder(DoClientsideParticleEffectPacket::new)
+                .consumerMainThread(DoClientsideParticleEffectPacket::handle)
+                .add();
     }
 
     public static void sendToServer(Object message) {

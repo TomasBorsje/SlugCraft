@@ -24,5 +24,6 @@ public class SlugCraftItemModels extends ItemModelProvider {
         basicItem(Registration.ARTIFICER_SOUL.get());
         basicItem(Registration.SAINT_SOUL.get());
         basicItem(Registration.GOURMAND_SOUL.get());
+        basicItem(Registration.SPORE_PUFF.get());
     }
 }

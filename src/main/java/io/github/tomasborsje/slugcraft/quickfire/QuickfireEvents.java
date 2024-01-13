@@ -3,6 +3,7 @@ package io.github.tomasborsje.slugcraft.quickfire;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.tomasborsje.slugcraft.SlugCraft;
 import io.github.tomasborsje.slugcraft.core.Registration;
+import io.github.tomasborsje.slugcraft.core.SlugCraftConfig;
 import io.github.tomasborsje.slugcraft.network.PacketHandler;
 import io.github.tomasborsje.slugcraft.network.StartThreatMusicPacket;
 import io.github.tomasborsje.slugcraft.sound.ThreatMusicHandler;
@@ -157,42 +158,44 @@ public class QuickfireEvents {
         // If clientside, return
         if(event.getEntity().level().isClientSide) { return; }
 
+        // If the round isn't running or if the grace period is still active, don't do anything
+        if(!QuickfireCapability.isRoundRunning || QuickfireCapability.roundTime < SlugCraftConfig.quickfireGracePeriodTime*20) { return; }
 
         // If the source is a player
-        if(event.getSource().getEntity() instanceof ServerPlayer player) {
+        if(event.getSource().getEntity() instanceof ServerPlayer source) {
             // If the target is a player, start threat music if not already started for them
             if(event.getEntity() instanceof ServerPlayer target) {
                 // If either of them are 0, send threat music start packet
                 ResourceLocation songKey = StartThreatMusicPacket.randomThreat();
                 if(QuickfireCapability.remainingThreatMusicTicks.getOrDefault(target, 0) <= 0) {
                     PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), target);
+                    SlugCraft.LOGGER.info("Starting player-attacked-me threat music for " + target.getDisplayName().getString());
                 }
-                if(QuickfireCapability.remainingThreatMusicTicks.getOrDefault(player, 0) <= 0) {
-                    PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), player);
+                if(QuickfireCapability.remainingThreatMusicTicks.getOrDefault(source, 0) <= 0) {
+                    PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), source);
+                    SlugCraft.LOGGER.info("Starting i-attacked-player threat music for " + source.getDisplayName().getString());
                 }
                 QuickfireCapability.remainingThreatMusicTicks.put(target, QuickfireCapability.THREAT_MUSIC_TIME*20);
-                QuickfireCapability.remainingThreatMusicTicks.put(player, QuickfireCapability.THREAT_MUSIC_TIME*20);
-            }
-            else {
-                // If the damage source is not falling, start it for the hurt player
-                if(!(event.getSource().is(DamageTypes.FALL) || event.getSource().is(DamageTypes.CACTUS)
-                        || event.getSource().is(DamageTypes.DROWN) || event.getSource().is(DamageTypes.IN_WALL))) {
-                    ResourceLocation songKey = StartThreatMusicPacket.randomThreat();
-                    if(QuickfireCapability.remainingThreatMusicTicks.getOrDefault(player, 0) <= 0) {
-                        PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), player);
-                    }
-                    QuickfireCapability.remainingThreatMusicTicks.put(player, QuickfireCapability.THREAT_MUSIC_TIME*20);
-                }
+                QuickfireCapability.remainingThreatMusicTicks.put(source, QuickfireCapability.THREAT_MUSIC_TIME*20);
             }
 
             // If they have a saint soul in offhand and their karma is less than 10
-            if(player.getInventory().getItem(Inventory.SLOT_OFFHAND).getItem() == Registration.SAINT_SOUL.get()
-                    && QuickfireCapability.karmaLevels.containsKey(player)
-                    && QuickfireCapability.karmaLevels.get(player) < 10) {
-                player.connection.send(new ClientboundClearTitlesPacket(true));
-                player.connection.send(new ClientboundSetTitleTextPacket(Component.translatable("message.slugcraft.karma_level.1").withStyle(Style.EMPTY.withFont(new ResourceLocation(SlugCraft.MODID, "slugcraft_font")))));
-                player.sendSystemMessage(Component.translatable("message.slugcraft.quickfire.saint_hurt").withStyle(Style.EMPTY.withFont(new ResourceLocation(SlugCraft.MODID, "slugcraft_font"))));
+            if(source.getInventory().getItem(Inventory.SLOT_OFFHAND).getItem() == Registration.SAINT_SOUL.get()
+                    && QuickfireCapability.karmaLevels.containsKey(source)
+                    && QuickfireCapability.karmaLevels.get(source) < 10) {
+                source.connection.send(new ClientboundClearTitlesPacket(true));
+                source.connection.send(new ClientboundSetTitleTextPacket(Component.translatable("message.slugcraft.karma_level.1").withStyle(Style.EMPTY.withFont(new ResourceLocation(SlugCraft.MODID, "slugcraft_font")))));
+                source.sendSystemMessage(Component.translatable("message.slugcraft.quickfire.saint_hurt"));
             }
+        }
+        else if(event.getEntity() instanceof ServerPlayer hurtPlayer && event.getSource().getEntity() != null) {
+            ResourceLocation songKey = StartThreatMusicPacket.randomThreat();
+            if(QuickfireCapability.remainingThreatMusicTicks.getOrDefault(hurtPlayer, 0) <= 0) {
+                    SlugCraft.LOGGER.info("Starting shorter i-was-attacked threat music for " + hurtPlayer.getDisplayName().getString());
+                    PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), hurtPlayer);
+            }
+                // Half as long threat music when you get hurt
+            QuickfireCapability.remainingThreatMusicTicks.put(hurtPlayer, QuickfireCapability.THREAT_MUSIC_TIME*10);
         }
     }
 

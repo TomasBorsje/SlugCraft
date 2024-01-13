@@ -49,7 +49,7 @@ public class ThrownExplosiveSpear extends AbstractArrow {
             if(level().isClientSide) {
                 return;
             }
-            this.level().explode(null, null, null, this.getX(), this.getY(), this.getZ(), 3.0F, false, Level.ExplosionInteraction.MOB);
+            this.level().explode(null, null, null, this.getX(), this.getY(), this.getZ(), 3.0F, false, Level.ExplosionInteraction.BLOCK);
             this.kill();
         }
     }

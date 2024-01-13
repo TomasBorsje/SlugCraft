@@ -6,6 +6,7 @@ import io.github.tomasborsje.slugcraft.effect.RottingEffect;
 import io.github.tomasborsje.slugcraft.entities.ThrownExplosiveSpear;
 import io.github.tomasborsje.slugcraft.entities.ThrownNeedle;
 import io.github.tomasborsje.slugcraft.entities.ThrownSpear;
+import io.github.tomasborsje.slugcraft.entities.ThrownSporePuff;
 import io.github.tomasborsje.slugcraft.models.ExplosiveSpearModel;
 import io.github.tomasborsje.slugcraft.models.NeedleModel;
 import io.github.tomasborsje.slugcraft.models.SpearModel;
@@ -15,6 +16,7 @@ import io.github.tomasborsje.slugcraft.renderers.ThrownNeedleRenderer;
 import io.github.tomasborsje.slugcraft.items.*;
 import io.github.tomasborsje.slugcraft.quickfire.IQuickfireCapability;
 import io.github.tomasborsje.slugcraft.renderers.ThrownSpearRenderer;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
@@ -99,6 +101,12 @@ public class Registration {
                     .fireImmune()
                     .updateInterval(5)
                     .build("slugcraft:thrown_explosive_spear"));
+    public static final RegistryObject<EntityType<ThrownSporePuff>> THROWN_SPORE_PUFF = ENTITIES.register("thrown_spore_puff",
+            () -> EntityType.Builder.<ThrownSporePuff>of(ThrownSporePuff::new, MobCategory.MISC)
+                    .sized(0.5F, 0.5F)
+                    .fireImmune()
+                    .updateInterval(5)
+                    .build("slugcraft:thrown_spore_puff"));
 
     // Blocks
     public static final RegistryObject<SimpleBlock> SIMPLE_BLOCK = BLOCKS.register("simple_block", SimpleBlock::new);
@@ -109,6 +117,7 @@ public class Registration {
 
     // Items
     public static final RegistryObject<HostWand> HOST_WAND = addToTab(ITEMS.register("host_wand", HostWand::new));
+    public static final RegistryObject<SporePuff> SPORE_PUFF = addToTab(ITEMS.register("spore_puff", SporePuff::new));
 
     // Souls
     public static final RegistryObject<RivuletSoul> RIVULET_SOUL = addToTab(ITEMS.register("rivulet_soul", RivuletSoul::new));
@@ -151,6 +160,8 @@ public class Registration {
         event.registerEntityRenderer(THROWN_NEEDLE.get(), ThrownNeedleRenderer::new);
         event.registerEntityRenderer(THROWN_EXPLOSIVE_SPEAR.get(), ThrownExplosiveSpearRenderer::new);
         event.registerEntityRenderer(THROWN_SPEAR.get(), ThrownSpearRenderer::new);
+        // Register spore puff
+        event.registerEntityRenderer(THROWN_SPORE_PUFF.get(), ThrownItemRenderer::new);
     }
 
     @SubscribeEvent

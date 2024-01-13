@@ -71,6 +71,9 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
         add("slugcraft.gourmand_haiku_three", "§8§oA hunger for life");
         add("message.slugcraft.gourmand.item_eaten", "§6§lYou ate %s§6§l!");
         add("message.slugcraft.gourmand.item_craft", "§6§lYou crafted %s§6§l!");
+        // Spore Puff
+        add(Registration.SPORE_PUFF.get(), "Spore Puff");
+        add("slugcraft.spore_puff_description", "Throw to create a puff of spores, blinding and poisoning anyone caught in the cloud.");
         // Spears
         add(Registration.EXPLOSIVE_SPEAR.get(), "§cExplosive Spear");
         add("slugcraft.explosive_spear_description", "A spear that explodes on impact.");
