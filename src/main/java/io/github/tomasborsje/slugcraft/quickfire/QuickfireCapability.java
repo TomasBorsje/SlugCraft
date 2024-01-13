@@ -41,21 +41,24 @@ public class QuickfireCapability implements IQuickfireCapability {
     private final static UUID rotLevelUUID = UUID.fromString("f186b657-e16b-448f-ad45-37186ee858e8");
     private final static int TICKS_PER_HUNTER_ROT = 20 * 60; // 1 minute
     private final static int TICKS_PER_SPEARMASTER_NEEDLE = 20 * 30;
+    private final static float THREAT_MUSIC_DISTANCE = 13.0f;
+    public final static int THREAT_MUSIC_TIME = 20;
     private final static HashMap<Player, Integer> gourmandEatTimers = new HashMap<>();
     private final static HashMap<Player, Integer> gourmandEatCounts = new HashMap<>();
+    public final static HashMap<Player, Integer> remainingThreatMusicTicks = new HashMap<>();
     private final Random random = new Random();
     private int roundTime = 0;
 
     // Use reflection to get the getChunks() method of ChunkMap
-    Method getChunks;
-    {
-        try {
-            getChunks = ChunkMap.class.getDeclaredMethod("getChunks");
-            getChunks.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    Method getChunks;
+//    {
+//        try {
+//            getChunks = ChunkMap.class.getDeclaredMethod("getChunks");
+//            getChunks.setAccessible(true);
+//        } catch (NoSuchMethodException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     /**
      * Executes a text command server-side.
@@ -75,6 +78,7 @@ public class QuickfireCapability implements IQuickfireCapability {
         gourmandEatCounts.clear();
         karmaLevels.clear();
         QuickfireEvents.replacedChests.clear();
+        remainingThreatMusicTicks.clear();
 
         // Show round prep title to all players
         executeCommand(level, "/title @a times 10t 40t 10t");
@@ -113,14 +117,14 @@ public class QuickfireCapability implements IQuickfireCapability {
         });
 
         // Call getChunks() on the ChunkMap using reflection
-        ChunkMap chunkMap = level.getChunkSource().chunkMap;
-        Iterable<ChunkHolder> chunks;
-        try {
-            chunks = (Iterable<ChunkHolder>) getChunks.invoke(chunkMap);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
-
+//        ChunkMap chunkMap = level.getChunkSource().chunkMap;
+//        Iterable<ChunkHolder> chunks;
+//        try {
+//            chunks = (Iterable<ChunkHolder>) getChunks.invoke(chunkMap);
+//        } catch (IllegalAccessException | InvocationTargetException e) {
+//            throw new RuntimeException(e);
+//        }
+//
 //        // For each chunk, replace chests
 //        for (ChunkHolder chunkHolder : chunks) {
 //            // Check if it exists, and get the LevelChunk through getTickingChunk if so:
@@ -174,7 +178,7 @@ public class QuickfireCapability implements IQuickfireCapability {
                 }
             }
             // If only 1 living player remains, end the round
-            if (livingPlayers.size() == 2 || livingPlayers.isEmpty()) {
+            if (livingPlayers.size() == 1 || livingPlayers.isEmpty()) {
                 // Show round end title to all players
                 if(!livingPlayers.isEmpty()) {
                     executeCommand(level, "/title @a subtitle \"" + livingPlayers.get(0).getName().getString() + " wins!\"");
@@ -187,6 +191,7 @@ public class QuickfireCapability implements IQuickfireCapability {
             // Increment tickCount;
             roundTime++;
             doTimedEvents(level);
+            doProximityThreatMusic(level);
 
             // For each player, check their offhand souls
             for (ServerPlayer player : livingPlayers) {
@@ -317,6 +322,48 @@ public class QuickfireCapability implements IQuickfireCapability {
         }
     }
 
+    private void doProximityThreatMusic(ServerLevel level) {
+        // If grace period is still active, return
+        if(roundTime < SlugCraftConfig.quickfireGracePeriodTime*20) {
+            return;
+        }
+
+        // For each player, check if they are closer than 10 blocks to another player
+        List<ServerPlayer> players = level.getServer().getPlayerList().getPlayers();
+        for(ServerPlayer player : players) {
+            for(ServerPlayer otherPlayer : players) {
+                float squareXZDistance = (float) (player.getX() - otherPlayer.getX()) * (float) (player.getX() - otherPlayer.getX()) + (float) (player.getZ() - otherPlayer.getZ()) * (float) (player.getZ() - otherPlayer.getZ());
+                if(player != otherPlayer && squareXZDistance < THREAT_MUSIC_DISTANCE * THREAT_MUSIC_DISTANCE) {
+                    // If both players are alive, set both their threat music timers to 10 seconds
+                    if(isAlive(player) && isAlive(otherPlayer)) {
+                        // If the player's don't have threat music playing, start it
+                        ResourceLocation songKey = StartThreatMusicPacket.randomThreat();
+                        if(remainingThreatMusicTicks.getOrDefault(player, 0) <= 0) {
+                            PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), player);
+                        }
+                        if(remainingThreatMusicTicks.getOrDefault(otherPlayer, 0) <= 0) {
+                            PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), otherPlayer);
+                        }
+                        remainingThreatMusicTicks.put(player, THREAT_MUSIC_TIME*20);
+                        remainingThreatMusicTicks.put(otherPlayer, THREAT_MUSIC_TIME*20);
+                        //SlugCraft.LOGGER.info("Setting threat music timers to "+THREAT_MUSIC_TIME+" seconds for players " + player.getName().getString() + " and " + otherPlayer.getName().getString());
+                    }
+                }
+            }
+        }
+
+        // Decrease all threat music timers by 1
+        remainingThreatMusicTicks.replaceAll((k, v) -> v-1);
+
+        // For each player, check if their threat music timer is 0
+        for(ServerPlayer player : players) {
+            if(remainingThreatMusicTicks.getOrDefault(player, -1) == 0) {
+                // If so, stop the threat music
+                PacketHandler.sendToClient(new StopThreatMusicPacket(), player);
+            }
+        }
+    }
+
     public static void broadcastMessage(ServerLevel level, Component message) {
         level.getServer().getPlayerList().getPlayers().forEach(player -> {
             player.sendSystemMessage(message);
@@ -350,11 +397,18 @@ public class QuickfireCapability implements IQuickfireCapability {
 
             // Start rain
             level.setWeatherParameters(0, 6000, true, false);
-            // Iterate all players and play threat music
-            PacketHandler.sendToAll(new SetThreatMusicPacket(false));
+
+            // All players that don't already have threat music playing, start it
+            ResourceLocation songKey = StartThreatMusicPacket.randomThreat();
+            for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
+                if (isAlive(player) && remainingThreatMusicTicks.getOrDefault(player, 0) <= 0) {
+                    PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), player);
+                    remainingThreatMusicTicks.put(player, 180*20);
+                }
+            }
         }
-        // If we're 30 seconds past the round limit, apply wither
-        if (roundTime == SlugCraftConfig.quickfireRoundTime*20 + 10*20) {
+        // If we're 15 seconds past the round limit, start hard rain
+        if (roundTime == SlugCraftConfig.quickfireRoundTime*20 + 15*20) {
             SlugCraft.LOGGER.info("10 seconds past round limit, starting hard rain + wither!");
             PacketHandler.sendToAll(new HardRainStartPacket());
             for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
@@ -372,7 +426,10 @@ public class QuickfireCapability implements IQuickfireCapability {
         setRoundRunning(false);
 
         // Set world border to min size
-        level.getWorldBorder().setSize(SlugCraftConfig.worldBorderEndSize);
+        level.getWorldBorder().setSize(SlugCraftConfig.worldBorderStartSize);
+
+        // Turn off all threat music
+        PacketHandler.sendToAll(new StopThreatMusicPacket());
 
         // Iterate all players and send a round end message
         if(winner != null) {
@@ -383,9 +440,7 @@ public class QuickfireCapability implements IQuickfireCapability {
     }
 
     @Override
-    public void postTickWorld() {
-
-    }
+    public void postTickWorld() { }
 
     @Override
     public void rotPlayer(LivingEntity pLivingEntity) {
@@ -405,8 +460,7 @@ public class QuickfireCapability implements IQuickfireCapability {
         pLivingEntity.getAttribute(Attributes.MAX_HEALTH).addTransientModifier(new AttributeModifier(rotLevelUUID, "Rotting", -2 * rotLevel, AttributeModifier.Operation.ADDITION));
 
         // Send ominous message to player
-        if (pLivingEntity instanceof Player) {
-            Player player = (Player) pLivingEntity;
+        if (pLivingEntity instanceof Player player) {
             player.sendSystemMessage(Component.translatable("message.slugcraft.rotting"));
         }
 
@@ -415,12 +469,10 @@ public class QuickfireCapability implements IQuickfireCapability {
             pLivingEntity.addEffect(new MobEffectInstance(MobEffects.WITHER, -1, 1));
             pLivingEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, -1, 3));
             // Send 'you're out of time...' message in dark gray
-            if (pLivingEntity instanceof Player) {
-                Player player = (Player) pLivingEntity;
+            if (pLivingEntity instanceof Player player) {
                 player.sendSystemMessage(Component.translatable("message.slugcraft.rotting_final"));
             }
         }
-
     }
 
     @Override

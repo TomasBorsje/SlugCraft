@@ -3,6 +3,9 @@ package io.github.tomasborsje.slugcraft.quickfire;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.tomasborsje.slugcraft.SlugCraft;
 import io.github.tomasborsje.slugcraft.core.Registration;
+import io.github.tomasborsje.slugcraft.network.PacketHandler;
+import io.github.tomasborsje.slugcraft.network.StartThreatMusicPacket;
+import io.github.tomasborsje.slugcraft.sound.ThreatMusicHandler;
 import net.minecraft.advancements.critereon.PlayerHurtEntityTrigger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
@@ -17,6 +20,7 @@ import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -153,8 +157,34 @@ public class QuickfireEvents {
         // If clientside, return
         if(event.getEntity().level().isClientSide) { return; }
 
-        // If the damager is a player, mark them as not passive
+
+        // If the source is a player
         if(event.getSource().getEntity() instanceof ServerPlayer player) {
+            // If the target is a player, start threat music if not already started for them
+            if(event.getEntity() instanceof ServerPlayer target) {
+                // If either of them are 0, send threat music start packet
+                ResourceLocation songKey = StartThreatMusicPacket.randomThreat();
+                if(QuickfireCapability.remainingThreatMusicTicks.getOrDefault(target, 0) <= 0) {
+                    PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), target);
+                }
+                if(QuickfireCapability.remainingThreatMusicTicks.getOrDefault(player, 0) <= 0) {
+                    PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), player);
+                }
+                QuickfireCapability.remainingThreatMusicTicks.put(target, QuickfireCapability.THREAT_MUSIC_TIME*20);
+                QuickfireCapability.remainingThreatMusicTicks.put(player, QuickfireCapability.THREAT_MUSIC_TIME*20);
+            }
+            else {
+                // If the damage source is not falling, start it for the hurt player
+                if(!(event.getSource().is(DamageTypes.FALL) || event.getSource().is(DamageTypes.CACTUS)
+                        || event.getSource().is(DamageTypes.DROWN) || event.getSource().is(DamageTypes.IN_WALL))) {
+                    ResourceLocation songKey = StartThreatMusicPacket.randomThreat();
+                    if(QuickfireCapability.remainingThreatMusicTicks.getOrDefault(player, 0) <= 0) {
+                        PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), player);
+                    }
+                    QuickfireCapability.remainingThreatMusicTicks.put(player, QuickfireCapability.THREAT_MUSIC_TIME*20);
+                }
+            }
+
             // If they have a saint soul in offhand and their karma is less than 10
             if(player.getInventory().getItem(Inventory.SLOT_OFFHAND).getItem() == Registration.SAINT_SOUL.get()
                     && QuickfireCapability.karmaLevels.containsKey(player)

@@ -12,20 +12,13 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.Random;
 import java.util.function.Supplier;
 
-public class SetThreatMusicPacket {
+public class StartThreatMusicPacket {
     private final ResourceLocation soundName;
     private final static Random random = new Random();
-    public SetThreatMusicPacket(boolean stopMusic) {
-        if (stopMusic) {
-            this.soundName = null;
-            SlugCraft.LOGGER.info("Sending threat music stop packet");
-        }
-        else {
-            this.soundName = Registration.THREAT_MUSICS[random.nextInt(Registration.THREAT_MUSICS.length)].get().getLocation();
-            SlugCraft.LOGGER.info("Sending threat music start packet with resource location " + soundName);
-        }
+    public StartThreatMusicPacket(ResourceLocation soundName) {
+        this.soundName = soundName;
     }
-    public SetThreatMusicPacket(FriendlyByteBuf buffer) {
+    public StartThreatMusicPacket(FriendlyByteBuf buffer) {
         this.soundName = buffer.readResourceLocation();
     }
     public void encode(FriendlyByteBuf friendlyByteBuf) {
@@ -35,14 +28,11 @@ public class SetThreatMusicPacket {
         ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             SlugCraft.LOGGER.info("CLIENT: Playing threat sound with resource location " + soundName);
 
-            // If sound name is null, stop threat music. Otherwise, play threat music
-            if (soundName == null) {
-                ThreatMusicHandler.stopThreatMusic();
-            }
-            else {
-                // Play sound
-                ThreatMusicHandler.playThreatMusic(soundName);
-            }
+            // Play threat music
+            ThreatMusicHandler.playThreatMusic(soundName);
         }));
+    }
+    public static ResourceLocation randomThreat() {
+        return Registration.THREAT_MUSICS[random.nextInt(Registration.THREAT_MUSICS.length)].get().getLocation();
     }
 }

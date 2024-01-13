@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 public class ThrownNeedle extends AbstractArrow {
     private static final ItemStack DEFAULT_NEEDLE_STACK = new ItemStack(Registration.NEEDLE.get());
     private boolean dealtDamage;
+    private boolean buffed;
 
     public ThrownNeedle(EntityType<? extends ThrownNeedle> p_37561_, Level p_37562_) {
         super(p_37561_, p_37562_);
@@ -63,7 +64,7 @@ public class ThrownNeedle extends AbstractArrow {
 
     protected void onHitEntity(EntityHitResult p_37573_) {
         Entity victim = p_37573_.getEntity();
-        float $$2 = 7.0F;
+        float $$2 = 10.0F;
         if (victim instanceof LivingEntity $$3) {
             $$2 += EnchantmentHelper.getDamageBonus(DEFAULT_NEEDLE_STACK, $$3.getMobType());
         }
@@ -85,7 +86,9 @@ public class ThrownNeedle extends AbstractArrow {
                 }
 
                 // Grant buffs to the owner
-                if(owner instanceof Player player && victim instanceof Player target) {
+                if(!buffed && owner instanceof Player player && victim instanceof Player target) {
+                    this.buffed = true;
+
                     // Send message to the thrower
                     player.sendSystemMessage(Component.translatable("item.slugcraft.needle.hit", victim.getName()));
 
@@ -93,7 +96,7 @@ public class ThrownNeedle extends AbstractArrow {
                     target.sendSystemMessage(Component.translatable("item.slugcraft.needle.receive_hit", player.getName()));
 
                     // Slow the target
-                    target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20*5, 1));
+                    target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20*10, 1));
 
                     // Add absorption and speed to the thrower
                     player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, -1, 2));

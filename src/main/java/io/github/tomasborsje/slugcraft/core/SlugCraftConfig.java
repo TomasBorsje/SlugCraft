@@ -16,7 +16,7 @@ public class SlugCraftConfig
 
     private static final ForgeConfigSpec.IntValue WORLD_BORDER_END_SIZE = BUILDER
             .comment("The end size of the world border.")
-            .defineInRange("worldBorderEndSize", 15, 1, Integer.MAX_VALUE);
+            .defineInRange("worldBorderEndSize", 30, 1, Integer.MAX_VALUE);
 
     private static final ForgeConfigSpec.IntValue QUICKFIRE_ROUND_TIME = BUILDER
             .comment("The time in seconds for a round of Quickfire.")
@@ -24,11 +24,11 @@ public class SlugCraftConfig
 
     private static final ForgeConfigSpec.IntValue SAINT_SECONDS_PER_KARMA_LEVEL = BUILDER
             .comment("The time in seconds for Saint to gain a karma level.")
-            .defineInRange("saintSecondsPerKarmaLevel", 5, 1, Integer.MAX_VALUE);
+            .defineInRange("saintSecondsPerKarmaLevel", 60, 1, Integer.MAX_VALUE);
 
     private static final ForgeConfigSpec.IntValue QUICKFIRE_GRACE_PERIOD_TIME = BUILDER
             .comment("The time in seconds until the grace period ends.")
-            .defineInRange("quickfireGracePeriodTime", 60, 1, Integer.MAX_VALUE);
+            .defineInRange("quickfireGracePeriodTime", 20, 1, Integer.MAX_VALUE);
 
     public static final ForgeConfigSpec SPEC = BUILDER.build();
     public static int worldBorderStartSize;

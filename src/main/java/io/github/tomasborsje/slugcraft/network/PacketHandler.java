@@ -2,6 +2,7 @@ package io.github.tomasborsje.slugcraft.network;
 
 import io.github.tomasborsje.slugcraft.SlugCraft;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
@@ -37,18 +38,26 @@ public class PacketHandler {
                 .consumerMainThread(HardRainStartPacket::handle)
                 .add();
         // Start threat music
-        INSTANCE.messageBuilder(SetThreatMusicPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(SetThreatMusicPacket::encode)
-                .decoder(SetThreatMusicPacket::new)
-                .consumerMainThread(SetThreatMusicPacket::handle)
+        INSTANCE.messageBuilder(StartThreatMusicPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(StartThreatMusicPacket::encode)
+                .decoder(StartThreatMusicPacket::new)
+                .consumerMainThread(StartThreatMusicPacket::handle)
+                .add();
+        // Stop threat music
+        INSTANCE.messageBuilder(StopThreatMusicPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(StopThreatMusicPacket::encode)
+                .decoder(StopThreatMusicPacket::new)
+                .consumerMainThread(StopThreatMusicPacket::handle)
                 .add();
     }
 
     public static void sendToServer(Object message) {
         INSTANCE.send(PacketDistributor.SERVER.noArg(), message);
     }
-
     public static void sendToAll(Object message) {
         INSTANCE.send(PacketDistributor.ALL.noArg(), message);
+    }
+    public static void sendToClient(Object message, ServerPlayer player) {
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), message);
     }
 }
