@@ -15,6 +15,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class GourmandSoul extends Item {
+    public static List<Item> CRAFTABLES = List.of(
+            Registration.SPEAR.get(),
+            Registration.EXPLOSIVE_SPEAR.get(),
+            Registration.SPORE_PUFF.get());
     public GourmandSoul() {
         super(Registration.ITEM_PROPERTIES);
     }

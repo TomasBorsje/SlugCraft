@@ -22,7 +22,7 @@ import javax.annotation.Nullable;
 
 public class ThrownSpear extends AbstractArrow {
     private static final ItemStack DEFAULT_SPEAR_STACK = new ItemStack(Registration.SPEAR.get());
-    public static final float SPEAR_DAMAGE = 8.0F;
+    public static final float SPEAR_DAMAGE = 16.0F;
     private boolean dealtDamage;
     private ItemStack thrownStack = DEFAULT_SPEAR_STACK;
 

@@ -64,16 +64,16 @@ public class ThrownNeedle extends AbstractArrow {
 
     protected void onHitEntity(EntityHitResult p_37573_) {
         Entity victim = p_37573_.getEntity();
-        float $$2 = 10.0F;
+        float dmg = 16.0F;
         if (victim instanceof LivingEntity $$3) {
-            $$2 += EnchantmentHelper.getDamageBonus(DEFAULT_NEEDLE_STACK, $$3.getMobType());
+            dmg += EnchantmentHelper.getDamageBonus(DEFAULT_NEEDLE_STACK, $$3.getMobType());
         }
 
         Entity owner = this.getOwner();
         DamageSource $$5 = this.damageSources().trident(this, (Entity)(owner == null ? this : owner));
         this.dealtDamage = true;
         SoundEvent $$6 = SoundEvents.TRIDENT_HIT;
-        if (victim.hurt($$5, $$2)) {
+        if (victim.hurt($$5, dmg)) {
             if (victim.getType() == EntityType.ENDERMAN) {
                 return;
             }

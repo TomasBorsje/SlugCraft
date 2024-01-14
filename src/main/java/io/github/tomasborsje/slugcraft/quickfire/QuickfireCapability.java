@@ -3,6 +3,7 @@ package io.github.tomasborsje.slugcraft.quickfire;
 import io.github.tomasborsje.slugcraft.SlugCraft;
 import io.github.tomasborsje.slugcraft.core.SlugCraftConfig;
 import io.github.tomasborsje.slugcraft.core.Registration;
+import io.github.tomasborsje.slugcraft.items.GourmandSoul;
 import io.github.tomasborsje.slugcraft.network.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -187,11 +188,15 @@ public class QuickfireCapability implements IQuickfireCapability {
             if (preRoundTime % preRoundDisplayTime == 0 && preRoundDisplayTime < 28) {
                 preRoundDisplayTime += 2;
                 preRoundTime = 0;
-                // Play an xp pickup sound to all players
-                executeCommand(level, "/playsound minecraft:entity.experience_orb.pickup master @a");
+                // Play an xp pickup sound to all players via packet
+                PacketHandler.sendToAll(new PlayClientsideSoundPacket(SoundEvents.EXPERIENCE_ORB_PICKUP.getLocation()));
 
-                // Get a random start point
-                startPoint = StartPoints.getRandomStartPoint();
+                // If this is the last iteration, select a random NEW map, otherwise random cosmetic map
+                if (preRoundDisplayTime + 2 > 28) {
+                    startPoint = StartPoints.getRandomNewStartPoint();
+                } else {
+                    startPoint = StartPoints.getRandomStartPoint();
+                }
                 // Show a title to all players
                 executeCommand(level, "/title @a subtitle \"§eChoosing map...\"");
                 executeCommand(level, "/title @a title \"" + startPoint.name + "\"");
@@ -362,10 +367,13 @@ public class QuickfireCapability implements IQuickfireCapability {
                                 // If the player has eaten 2 items, reset their eat count and give them a spear
                                 if (eatCount == 2) {
                                     gourmandEatCounts.put(player, 0);
-                                    ItemStack craftedItem = new ItemStack(Registration.SPEAR.get());
-                                    player.getInventory().setItem(player.getInventory().selected, craftedItem);
+                                    // Get a random item from GourmandSoul.CRAFTABLES
+                                    Item craftedItem = GourmandSoul.CRAFTABLES.get(random.nextInt(GourmandSoul.CRAFTABLES.size()));
+                                    // Give the player the item
+                                    ItemStack craftedItemStack = new ItemStack(craftedItem);
+                                    player.getInventory().setItem(player.getInventory().selected, craftedItemStack);
                                     // Send a message to the player
-                                    player.sendSystemMessage(Component.translatable("message.slugcraft.gourmand.item_craft", craftedItem.getHoverName().getString()));
+                                    player.sendSystemMessage(Component.translatable("message.slugcraft.gourmand.item_craft", craftedItemStack.getHoverName().getString()));
                                 }
                             }
                         }

@@ -64,11 +64,11 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
         add("slugcraft.saint_haiku_three", "§8§oApotheosis");
         // Gourmand
         add(Registration.GOURMAND_SOUL.get(), "§6§lSoul of the Gourmand");
-        add("slugcraft.gourmand_power", "Crouch to eat your currently held item if it can't stack.");
+        add("slugcraft.gourmand_power", "Crouch to eat your currently held item (if it can't stack).");
         add("slugcraft.gourmand_power_two", "Eat two items to craft a random item.");
-        add("slugcraft.gourmand_haiku_one", "§8§oA hunger for flesh");
-        add("slugcraft.gourmand_haiku_two", "§8§oA hunger for the living");
-        add("slugcraft.gourmand_haiku_three", "§8§oA hunger for life");
+        add("slugcraft.gourmand_haiku_one", "§8§oSlowly, steadily");
+        add("slugcraft.gourmand_haiku_two", "§8§oGastronomic miracle");
+        add("slugcraft.gourmand_haiku_three", "§8§oMust taste everything");
         add("message.slugcraft.gourmand.item_eaten", "§6§lYou ate %s§6§l!");
         add("message.slugcraft.gourmand.item_craft", "§6§lYou crafted %s§6§l!");
         // Enot

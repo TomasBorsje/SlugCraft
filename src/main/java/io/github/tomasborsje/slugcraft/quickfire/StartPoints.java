@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StartPoints {
-    public static final List<StartPoint> BROVILLE_START_POINTs = new ArrayList<>();
+    public static final List<StartPoint> BROVILLE_START_POINTS = new ArrayList<>();
+    public static final List<StartPoint> BROVILLE_REMAINING_START_POINTS = new ArrayList<>();
 
     public static final StartPoint FOUNTAIN = addStartPoint(-402 ,1816 , "Fountain", 8);
     public static final StartPoint MUSEUM = addStartPoint(-565, 1918, "Town Hall", 8);
@@ -31,12 +32,23 @@ public class StartPoints {
     public static final StartPoint MILITARY_BASE = addStartPoint(906,2036,"Military Base", 8);
 
     public static StartPoint getRandomStartPoint() {
-        return BROVILLE_START_POINTs.get((int) (Math.random() * BROVILLE_START_POINTs.size()));
+        // Return random from all start points
+        return BROVILLE_START_POINTS.get((int) (Math.random() * BROVILLE_START_POINTS.size()));
     }
-
+    public static StartPoint getRandomNewStartPoint() {
+        // If remaining start points is empty, copy all start points to remaining start points
+        if (BROVILLE_REMAINING_START_POINTS.isEmpty()) {
+            BROVILLE_REMAINING_START_POINTS.addAll(BROVILLE_START_POINTS);
+        }
+        // Get random point and remove it from the remaining points
+        int randomIndex = (int) (Math.random() * BROVILLE_REMAINING_START_POINTS.size());
+        StartPoint pt = BROVILLE_REMAINING_START_POINTS.get(randomIndex);
+        BROVILLE_REMAINING_START_POINTS.remove(randomIndex);
+        return pt;
+    }
     private static StartPoint addStartPoint(int x, int z, String name, int spreadRadius) {
         StartPoint pt = new StartPoint(x, z, name, spreadRadius);
-        BROVILLE_START_POINTs.add(pt);
+        BROVILLE_START_POINTS.add(pt);
         return pt;
     }
 }
