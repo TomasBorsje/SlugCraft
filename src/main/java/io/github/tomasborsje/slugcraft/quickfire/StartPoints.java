@@ -7,7 +7,7 @@ public class StartPoints {
     public static final List<StartPoint> BROVILLE_START_POINTs = new ArrayList<>();
 
     public static final StartPoint FOUNTAIN = addStartPoint(-402 ,1816 , "Fountain", 8);
-    public static final StartPoint MUSEUM = addStartPoint(-565, -1918, "Town Hall", 8);
+    public static final StartPoint MUSEUM = addStartPoint(-565, 1918, "Town Hall", 8);
     public static final StartPoint VARSITY = addStartPoint(-565,1829, "Varsity Circle", 12);
     public static final StartPoint MALL = addStartPoint(-445, 1957, "Shopping Mall", 8);
     public static final StartPoint CHURCH = addStartPoint(-375,2121,"Church", 8);
@@ -20,6 +20,15 @@ public class StartPoints {
     public static final StartPoint DOWNTOWN = addStartPoint(-218,1968,"Downtown", 8);
     public static final StartPoint CARGO = addStartPoint(9,2012,"Cargo", 8);
     public static final StartPoint STADIUM = addStartPoint(-175,2121,"Stadium", 13);
+    public static final StartPoint STAGE = addStartPoint(-777,1799,"Stage", 8);
+    public static final StartPoint TENNIS_COURTS = addStartPoint(-1015, 1966,"Tennis Courts", 8);
+    public static final StartPoint EXCAVATION_SITE = addStartPoint(-1489, 2516,"Excavation Site", 12);
+    public static final StartPoint ALPINE_VILLAGE = addStartPoint(-197,2914,"Alpine Village", 8);
+    public static final StartPoint FARMLAND = addStartPoint(-906,2395,"Farmland", 8);
+    public static final StartPoint OUTSKIRTS = addStartPoint(-1009,2236,"Outskirts", 13);
+    public static final StartPoint FOOTBALL_FIELD = addStartPoint(-896,2095,"Football Field", 8);
+    public static final StartPoint CONSTRUCTION = addStartPoint(-726,2166, "Under Construction", 8);
+    public static final StartPoint MILITARY_BASE = addStartPoint(906,2036,"Military Base", 8);
 
     public static StartPoint getRandomStartPoint() {
         return BROVILLE_START_POINTs.get((int) (Math.random() * BROVILLE_START_POINTs.size()));

@@ -199,8 +199,8 @@ public class QuickfireCapability implements IQuickfireCapability {
             else if(preRoundDisplayTime == 28) {
                 SlugCraft.LOGGER.info("Starting round on map " + startPoint.name);
                 preRoundDisplayTime++;
-                // Play an xp pickup sound to all players
-                executeCommand(level, "/playsound minecraft:entity.experience_orb.pickup master @a");
+                // Play karma gain sound to all players with packet
+                PacketHandler.sendToAll(new PlayClientsideSoundPacket(Registration.GAIN_KARMA.getId()));
                 // Select final map and set up round;
                 // Set world spawn to start point
                 level.setDefaultSpawnPos(new BlockPos(startPoint.x, 64, startPoint.z), 0.0f);
