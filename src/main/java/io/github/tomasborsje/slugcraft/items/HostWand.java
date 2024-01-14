@@ -27,7 +27,7 @@ public class HostWand extends Item {
 
             // Get level capability
             pLevel.getCapability(Registration.QUICKFIRE_HANDLER).ifPresent(quickFire -> {
-                quickFire.startRound((ServerLevel) pLevel, pPlayer);
+                quickFire.startRound((ServerLevel) pLevel);
             });
         }
 

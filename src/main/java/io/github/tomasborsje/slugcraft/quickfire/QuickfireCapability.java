@@ -29,15 +29,16 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.border.WorldBorder;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 import static io.github.tomasborsje.slugcraft.core.Registration.SLUGCAT_SOULS;
 
 public class QuickfireCapability implements IQuickfireCapability {
     public static boolean isRoundRunning = false;
+    public static boolean isPreRoundRunning = false;
     public static int roundTime = 0;
+    public static int preRoundTime = 0;
+    public static int preRoundDisplayTime = 2;
     public final static float THREAT_MUSIC_DISTANCE = 13.0f;
     public final static int THREAT_MUSIC_TIME = 15;
     public final static HashMap<Player, Integer> karmaLevels = new HashMap<>();
@@ -49,6 +50,7 @@ public class QuickfireCapability implements IQuickfireCapability {
     private final static HashMap<Player, Integer> gourmandEatCounts = new HashMap<>();
     private final Random random = new Random();
     private boolean lastTickRoundRunning = false;
+    private StartPoint startPoint;
 
     // Use reflection to get the getChunks() method of ChunkMap
 //    Method getChunks;
@@ -71,7 +73,7 @@ public class QuickfireCapability implements IQuickfireCapability {
     }
 
     @Override
-    public void startRound(ServerLevel level, Player startPlayer) {
+    public void startRound(ServerLevel level) {
         roundTime = 0;
 
         // Empty all round data
@@ -87,9 +89,6 @@ public class QuickfireCapability implements IQuickfireCapability {
 
         // Set weather to clear
         level.setWeatherParameters(0, 6000, false, false);
-
-        // Set world spawn to start player's position
-        level.setDefaultSpawnPos(new BlockPos((int) startPlayer.getX(), (int) startPlayer.getY(), (int) startPlayer.getZ()), 0.0f);
 
         PacketHandler.sendToAll(new QuickfireRoundStartPacket());
 
@@ -125,35 +124,6 @@ public class QuickfireCapability implements IQuickfireCapability {
             player.sendSystemMessage(Component.translatable("message.slugcraft.quickfire.round_start"));
         });
 
-        // Call getChunks() on the ChunkMap using reflection
-//        ChunkMap chunkMap = level.getChunkSource().chunkMap;
-//        Iterable<ChunkHolder> chunks;
-//        try {
-//            chunks = (Iterable<ChunkHolder>) getChunks.invoke(chunkMap);
-//        } catch (IllegalAccessException | InvocationTargetException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        // For each chunk, replace chests
-//        for (ChunkHolder chunkHolder : chunks) {
-//            // Check if it exists, and get the LevelChunk through getTickingChunk if so:
-//            if (chunkHolder != null) {
-//                LevelChunk chunk = chunkHolder.getTickingChunk();
-//                if (chunk == null) continue;
-//                // Replace all chests with diamond blocks
-//                for (BlockPos pos : chunk.getBlockEntitiesPos()) {
-//                    if (level.getBlockState(pos).is(Blocks.CHEST)) {
-//
-//                    }
-//                }
-//            }
-//        }
-
-        // Teleport all players to the starting player
-        level.getServer().getPlayerList().getPlayers().forEach(player -> {
-            player.teleportTo(startPlayer.getX(), startPlayer.getY(), startPlayer.getZ());
-        });
-
         // Set world difficulty to peaceful
         executeCommand(level, "/difficulty peaceful");
         // Delete all item entities
@@ -163,13 +133,37 @@ public class QuickfireCapability implements IQuickfireCapability {
 
         // Set world border to center on player
         WorldBorder border = level.getWorldBorder();
-        border.setCenter(startPlayer.getX(), startPlayer.getZ());
         border.lerpSizeBetween(SlugCraftConfig.worldBorderStartSize, SlugCraftConfig.worldBorderEndSize, SlugCraftConfig.quickfireRoundTime * 1000L);
         border.setDamageSafeZone(1);
         border.setDamagePerBlock(0.2);
         setRoundRunning(true);
     }
-    
+
+    @Override
+    public void startPreRound(ServerLevel level, ServerPlayer player) {
+        isPreRoundRunning = true;
+        preRoundTime = 0;
+        preRoundDisplayTime = 2;
+
+        // Clear weather and set difficulty to peaceful
+        level.setWeatherParameters(0, 6000, false, false);
+        executeCommand(level, "/difficulty peaceful");
+        // Set all player gamemodes to spectator
+        executeCommand(level, "/gamemode spectator @a");
+        // Set all player title times to 0t 80t 20t
+        executeCommand(level, "/title @a times 0t 80t 20t");
+        // Set time to day
+        executeCommand(level, "/time set day");
+        // Clear all player effects
+        executeCommand(level, "/effect clear @a");
+        // Clear all player inventories
+        executeCommand(level, "/clear @a");
+        // Set all player's health to 20
+        executeCommand(level, "/effect give @a minecraft:instant_health 1 19");
+        // Set all player's hunger to 20
+        executeCommand(level, "/effect give @a minecraft:saturation 1 19");
+    }
+
     private boolean isAlive(ServerPlayer player) {
         // Check the player is in survival and alive
         return player.gameMode.isSurvival() && player.isAlive();
@@ -183,6 +177,53 @@ public class QuickfireCapability implements IQuickfireCapability {
             PacketHandler.sendToAll(new StopThreatMusicPacket());
         }
 
+        if (isPreRoundRunning) {
+            // Increment preRoundTime;
+            preRoundTime++;
+
+            SlugCraft.LOGGER.info("Pre-round time: " + preRoundTime + " display = " + preRoundDisplayTime);
+
+            // Every second, show a random map cosmetically
+            if (preRoundTime % preRoundDisplayTime == 0 && preRoundDisplayTime < 28) {
+                preRoundDisplayTime += 2;
+                preRoundTime = 0;
+                // Play an xp pickup sound to all players
+                executeCommand(level, "/playsound minecraft:entity.experience_orb.pickup master @a");
+
+                // Get a random start point
+                startPoint = StartPoints.getRandomStartPoint();
+                // Show a title to all players
+                executeCommand(level, "/title @a subtitle \"§eChoosing map...\"");
+                executeCommand(level, "/title @a title \"" + startPoint.name + "\"");
+            }
+            else if(preRoundDisplayTime == 28) {
+                SlugCraft.LOGGER.info("Starting round on map " + startPoint.name);
+                preRoundDisplayTime++;
+                // Play an xp pickup sound to all players
+                executeCommand(level, "/playsound minecraft:entity.experience_orb.pickup master @a");
+                // Select final map and set up round;
+                // Set world spawn to start point
+                level.setDefaultSpawnPos(new BlockPos(startPoint.x, 64, startPoint.z), 0.0f);
+                // Set world border to center on start point
+                WorldBorder border = level.getWorldBorder();
+                border.setCenter(startPoint.x, startPoint.z);
+                border.setSize(startPoint.spreadRadius*2);
+                // Show a title to all players, with a 5-second duration this time
+                executeCommand(level, "/title @a times 0t 150t 20t");
+                executeCommand(level, "/title @a subtitle \"§eStarting in 30 seconds!\"");
+                executeCommand(level, "/title @a title \"" + startPoint.name + "\"");
+                // Spreadplayers around worldborder
+                executeCommand(level, "/spreadplayers " + startPoint.x + " " + startPoint.z + " " + 0 + " " + startPoint.spreadRadius + " false @a");
+                // Set all players gamemodes to adventure
+                executeCommand(level, "/gamemode adventure @a");
+            }
+            if(preRoundTime == 30*20) {
+                // Start round
+                startRound(level);
+                isPreRoundRunning = false;
+                return;
+            }
+        }
         // If the round is running
         if (isRoundRunning) {
             // Check if there is only 1 player alive

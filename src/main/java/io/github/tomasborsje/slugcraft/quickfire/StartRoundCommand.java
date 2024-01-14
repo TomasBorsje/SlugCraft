@@ -27,7 +27,7 @@ public class StartRoundCommand {
         if(command.getSource().getEntity() instanceof ServerPlayer player){
             // Get quickfire capability
             LazyOptional<IQuickfireCapability> quickfireData = player.serverLevel().getCapability(Registration.QUICKFIRE_HANDLER);
-            quickfireData.ifPresent(quickfire -> quickfire.startRound(player.serverLevel(), player));
+            quickfireData.ifPresent(quickfire -> quickfire.startPreRound(player.serverLevel(), player));
         }
         return Command.SINGLE_SUCCESS;
     }
