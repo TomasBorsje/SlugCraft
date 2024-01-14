@@ -42,7 +42,7 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
         add("slugcraft.spearmaster_power", "Gain a throwable needle every 30 seconds, up to three.");
         add("slugcraft.spearmaster_power_two", "Hitting a player with a needle grants speed, an absorption shield, and fills your food.");
         add("slugcraft.spearmaster_haiku_one", "§8§oA resourceful being");
-        add("slugcraft.spearmaster_haiku_two", "§8§oCreate your own vicious weapons");
+        add("slugcraft.spearmaster_haiku_two", "§8§oCreate your own unique weapons");
         add("slugcraft.spearmaster_haiku_three", "§8§oFeed on their lifeforce");
         // Artificer
         add(Registration.ARTIFICER_SOUL.get(), "§4§lSoul of the Artificer");
@@ -71,9 +71,17 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
         add("slugcraft.gourmand_haiku_three", "§8§oA hunger for life");
         add("message.slugcraft.gourmand.item_eaten", "§6§lYou ate %s§6§l!");
         add("message.slugcraft.gourmand.item_craft", "§6§lYou crafted %s§6§l!");
+        // Enot
+        add(Registration.ENOT_SOUL.get(), "§1§lSoul of the ???");
+        add("slugcraft.enot_power", "Start with a §1Singularity Bomb.");
+        add("slugcraft.enot_power_two", "That's it. That's the whole slugcat.");
+        add("slugcraft.enot_haiku_one", "§8§oThanks, Andrew.");
         // Spore Puff
         add(Registration.SPORE_PUFF.get(), "Spore Puff");
         add("slugcraft.spore_puff_description", "Throw to create a puff of spores, blinding and poisoning anyone caught in the cloud.");
+        // Singularity Grenade
+        add(Registration.SINGULARITY_GRENADE.get(), "§1Singularity Bomb");
+        add("slugcraft.singularity_grenade_description", "Creates a black hole that pulls in everything nearby and then explodes.");
         // Spears
         add(Registration.EXPLOSIVE_SPEAR.get(), "§cExplosive Spear");
         add("slugcraft.explosive_spear_description", "A spear that explodes on impact.");

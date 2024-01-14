@@ -50,7 +50,6 @@ public class QuickfireCapability implements IQuickfireCapability {
     private final Random random = new Random();
     private boolean lastTickRoundRunning = false;
 
-
     // Use reflection to get the getChunks() method of ChunkMap
 //    Method getChunks;
 //    {
@@ -103,13 +102,21 @@ public class QuickfireCapability implements IQuickfireCapability {
             player.getAbilities().mayfly = false;
             player.onUpdateAbilities();
 
-            // Give a random Slugcat soul into the offhand
-            Item slugcatSoul = SLUGCAT_SOULS[random.nextInt(SLUGCAT_SOULS.length)].get();
-            player.getInventory().setItem(Inventory.SLOT_OFFHAND, new ItemStack(slugcatSoul));
-
             // Remove the max health modifier from Rotting
             if(player.getAttribute(Attributes.MAX_HEALTH) != null) {
                 player.getAttribute(Attributes.MAX_HEALTH).removeModifier(rotLevelUUID);
+            }
+
+            // Give a random Slugcat soul into the offhand
+            Item slugcatSoul = SLUGCAT_SOULS[random.nextInt(SLUGCAT_SOULS.length)].get();
+            player.getInventory().setItem(Inventory.SLOT_OFFHAND, new ItemStack(slugcatSoul));
+            // If the slugcat soul is enot, give the player a singularity bomb
+            if(slugcatSoul == Registration.ENOT_SOUL.get()) {
+                player.getInventory().setItem(player.getInventory().selected, new ItemStack(Registration.SINGULARITY_GRENADE.get()));
+            }
+            // Else if they are hunter, give them a spear in selected slot
+            else if(slugcatSoul == Registration.HUNTER_SOUL.get()) {
+                player.getInventory().setItem(player.getInventory().selected, new ItemStack(Registration.SPEAR.get()));
             }
 
             // Set player's subtitle to their current soul
@@ -402,7 +409,7 @@ public class QuickfireCapability implements IQuickfireCapability {
 
             executeCommand(level, "/title @a reset");
             executeCommand(level, "/title @a times 10t 40t 10t");
-            executeCommand(level, "/title @a title \"The rain has started...\"");
+            executeCommand(level, "/title @a title \"§7The rain has started...\"");
 
             // Start rain
             level.setWeatherParameters(0, 6000, true, false);
@@ -416,8 +423,8 @@ public class QuickfireCapability implements IQuickfireCapability {
                 }
             }
         }
-        // If we're 15 seconds past the round limit, start hard rain
-        if (roundTime == SlugCraftConfig.quickfireRoundTime*20 + 15*20) {
+        // If we're past the hard rain delay, start the hard rain and wither
+        if (roundTime == SlugCraftConfig.quickfireRoundTime*20 + SlugCraftConfig.quickfireHardRainDelay*20) {
             SlugCraft.LOGGER.info("10 seconds past round limit, starting hard rain + wither!");
             PacketHandler.sendToAll(new HardRainStartPacket());
             for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {

@@ -9,6 +9,8 @@ import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -20,10 +22,7 @@ import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.*;
 
 public class ThrownSporePuff extends ThrowableItemProjectile {
     private final static float HURT_RADIUS = 5.5f;
@@ -57,6 +56,15 @@ public class ThrownSporePuff extends ThrowableItemProjectile {
 
         Entity target = entityHit.getEntity();
         target.hurt(this.damageSources().thrown(this, this.getOwner()), 1);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        // Return clientside
+        if (this.level().isClientSide) {
+            return;
+        }
     }
 
     void explode() {

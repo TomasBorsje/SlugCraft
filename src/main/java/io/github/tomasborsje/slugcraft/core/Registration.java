@@ -3,10 +3,7 @@ package io.github.tomasborsje.slugcraft.core;
 import io.github.tomasborsje.slugcraft.SlugCraft;
 import io.github.tomasborsje.slugcraft.blocks.SimpleBlock;
 import io.github.tomasborsje.slugcraft.effect.RottingEffect;
-import io.github.tomasborsje.slugcraft.entities.ThrownExplosiveSpear;
-import io.github.tomasborsje.slugcraft.entities.ThrownNeedle;
-import io.github.tomasborsje.slugcraft.entities.ThrownSpear;
-import io.github.tomasborsje.slugcraft.entities.ThrownSporePuff;
+import io.github.tomasborsje.slugcraft.entities.*;
 import io.github.tomasborsje.slugcraft.models.ExplosiveSpearModel;
 import io.github.tomasborsje.slugcraft.models.NeedleModel;
 import io.github.tomasborsje.slugcraft.models.SpearModel;
@@ -108,6 +105,13 @@ public class Registration {
                     .updateInterval(5)
                     .build("slugcraft:thrown_spore_puff"));
 
+    public static final RegistryObject<EntityType<ThrownSingularityGrenade>> THROWN_SINGULARITY_GRENADE = ENTITIES.register("thrown_singularity_grenade",
+            () -> EntityType.Builder.<ThrownSingularityGrenade>of(ThrownSingularityGrenade::new, MobCategory.MISC)
+                    .sized(0.5F, 0.5F)
+                    .fireImmune()
+                    .updateInterval(5)
+                    .build("slugcraft:thrown_singularity_grenade"));
+
     // Blocks
     public static final RegistryObject<SimpleBlock> SIMPLE_BLOCK = BLOCKS.register("simple_block", SimpleBlock::new);
     public static final RegistryObject<Item> SIMPLE_BLOCK_ITEM = ITEMS.register("simple_block", () -> new BlockItem(SIMPLE_BLOCK.get(), new Item.Properties()));
@@ -118,7 +122,7 @@ public class Registration {
     // Items
     public static final RegistryObject<HostWand> HOST_WAND = addToTab(ITEMS.register("host_wand", HostWand::new));
     public static final RegistryObject<SporePuff> SPORE_PUFF = addToTab(ITEMS.register("spore_puff", SporePuff::new));
-
+    public static final RegistryObject<SingularityGrenade> SINGULARITY_GRENADE = addToTab(ITEMS.register("singularity_grenade", SingularityGrenade::new));
     // Souls
     public static final RegistryObject<RivuletSoul> RIVULET_SOUL = addToTab(ITEMS.register("rivulet_soul", RivuletSoul::new));
     public static final RegistryObject<HunterSoul> HUNTER_SOUL = addToTab(ITEMS.register("hunter_soul", HunterSoul::new));
@@ -126,13 +130,15 @@ public class Registration {
     public static final RegistryObject<ArtificerSoul> ARTIFICER_SOUL = addToTab(ITEMS.register("artificer_soul", ArtificerSoul::new));
     public static final RegistryObject<SaintSoul> SAINT_SOUL = addToTab(ITEMS.register("saint_soul", SaintSoul::new));
     public static final RegistryObject<GourmandSoul> GOURMAND_SOUL = addToTab(ITEMS.register("gourmand_soul", GourmandSoul::new));
+    public static final RegistryObject<EnotSoul> ENOT_SOUL = addToTab(ITEMS.register("enot_soul", EnotSoul::new));
     public static final RegistryObject<Item>[] SLUGCAT_SOULS = new RegistryObject[] {
             RIVULET_SOUL,
             HUNTER_SOUL,
             SPEARMASTER_SOUL,
             ARTIFICER_SOUL,
             SAINT_SOUL,
-            GOURMAND_SOUL
+            GOURMAND_SOUL,
+            ENOT_SOUL
     };
 
     // Spears
@@ -162,6 +168,8 @@ public class Registration {
         event.registerEntityRenderer(THROWN_SPEAR.get(), ThrownSpearRenderer::new);
         // Register spore puff
         event.registerEntityRenderer(THROWN_SPORE_PUFF.get(), ThrownItemRenderer::new);
+        // Register singularity grenade
+        event.registerEntityRenderer(THROWN_SINGULARITY_GRENADE.get(), ThrownItemRenderer::new);
     }
 
     @SubscribeEvent

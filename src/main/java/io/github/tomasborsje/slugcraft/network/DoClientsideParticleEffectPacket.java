@@ -22,6 +22,8 @@ import java.util.function.Supplier;
 public class DoClientsideParticleEffectPacket {
     private final static double SMOKE_RADIUS = 1.5f;
     private final static int SMOKE_COUNT = 150;
+    private final static int SINGULARITY_RADIUS = 4;
+    private final static int SINGULARITY_PARTICLE_COUNT = 400;
     private final Random random = new Random();
     private final ParticleEffect effect;
     private final double x;
@@ -29,7 +31,8 @@ public class DoClientsideParticleEffectPacket {
     private final double z;
 
     public enum ParticleEffect {
-        SPORE_PUFF
+        SPORE_PUFF,
+        SINGULARITY_GRENADE
     }
     public DoClientsideParticleEffectPacket(ParticleEffect effect, double x, double y, double z) {
         this.effect = effect;
@@ -59,6 +62,9 @@ public class DoClientsideParticleEffectPacket {
                 case SPORE_PUFF:
                     sporePuff();
                     break;
+                case SINGULARITY_GRENADE:
+                    singularityGrenade();
+                    break;
             }
         }));
     }
@@ -77,6 +83,42 @@ public class DoClientsideParticleEffectPacket {
                 particleEngine.createParticle(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, x + offsetX, y + offsetY, z + offsetZ, 0, 0, 0);
             } catch (Exception e) {
                 SlugCraft.LOGGER.error("Failed to spawn spore puff particle", e);
+            }
+        }
+    }
+
+    void singularityGrenade() {
+        ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
+        // Create 100 particles
+        for(int i = 0; i < SINGULARITY_PARTICLE_COUNT; i++) {
+            // Get random point on a sphere with radius SINGULARITY_RADIUS
+            double theta = random.nextDouble() * Math.PI * 2;
+            double phi = random.nextDouble() * Math.PI * 2;
+            double radius = SINGULARITY_RADIUS;
+            double offsetX = radius * Math.sin(theta) * Math.cos(phi);
+            double offsetY = radius * Math.sin(theta) * Math.sin(phi);
+            double offsetZ = radius * Math.cos(theta);
+            // Spawn particle
+            try {
+                particleEngine.createParticle(ParticleTypes.ENCHANTED_HIT, x + offsetX, y + offsetY, z + offsetZ, 0, 0, 0);
+            } catch (Exception e) {
+                SlugCraft.LOGGER.error("Failed to spawn singularity grenade particle", e);
+            }
+        }
+        // Do this again but with 20% of the radius and 20% of the particles
+        for(int i = 0; i < SINGULARITY_PARTICLE_COUNT / 5; i++) {
+            // Get random point on a sphere with radius SINGULARITY_RADIUS
+            double theta = random.nextDouble() * Math.PI * 2;
+            double phi = random.nextDouble() * Math.PI * 2;
+            double radius = SINGULARITY_RADIUS / 5f;
+            double offsetX = radius * Math.sin(theta) * Math.cos(phi);
+            double offsetY = radius * Math.sin(theta) * Math.sin(phi);
+            double offsetZ = radius * Math.cos(theta);
+            // Spawn particle
+            try {
+                particleEngine.createParticle(ParticleTypes.ENCHANTED_HIT, x + offsetX, y + offsetY, z + offsetZ, 0, 0, 0);
+            } catch (Exception e) {
+                SlugCraft.LOGGER.error("Failed to spawn singularity grenade particle", e);
             }
         }
     }

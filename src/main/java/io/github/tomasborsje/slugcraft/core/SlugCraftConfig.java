@@ -30,12 +30,17 @@ public class SlugCraftConfig
             .comment("The time in seconds until the grace period ends.")
             .defineInRange("quickfireGracePeriodTime", 20, 1, Integer.MAX_VALUE);
 
+    private static final ForgeConfigSpec.IntValue QUICKFIRE_HARD_RAIN_DELAY = BUILDER
+            .comment("Time until the hard rain starts after the world border has closed.")
+            .defineInRange("quickfireHardRainDelay", 30, 1, Integer.MAX_VALUE);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
     public static int worldBorderStartSize;
     public static int worldBorderEndSize;
     public static int quickfireRoundTime;
     public static int quickfireGracePeriodTime;
     public static int saintSecondsPerKarmaLevel;
+    public static int quickfireHardRainDelay;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event)
@@ -46,5 +51,6 @@ public class SlugCraftConfig
         quickfireRoundTime = QUICKFIRE_ROUND_TIME.get();
         quickfireGracePeriodTime = QUICKFIRE_GRACE_PERIOD_TIME.get();
         saintSecondsPerKarmaLevel = SAINT_SECONDS_PER_KARMA_LEVEL.get();
+        quickfireHardRainDelay = QUICKFIRE_HARD_RAIN_DELAY.get();
     }
 }
