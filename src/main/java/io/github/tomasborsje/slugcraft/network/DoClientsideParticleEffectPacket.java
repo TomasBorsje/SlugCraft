@@ -57,7 +57,6 @@ public class DoClientsideParticleEffectPacket {
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-            SlugCraft.LOGGER.info("CLIENT: Spawning particle effect " + effect + " at " + x + ", " + y + ", " + z);
             switch (effect) {
                 case SPORE_PUFF:
                     sporePuff();

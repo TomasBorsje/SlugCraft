@@ -82,6 +82,7 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
         // Singularity Grenade
         add(Registration.SINGULARITY_GRENADE.get(), "§1Singularity Bomb");
         add("slugcraft.singularity_grenade_description", "Creates a black hole that pulls in everything nearby and then explodes.");
+        add("slugcraft.singularity_grenade_description_two", "§8§ogood night, gamer");
         // Spears
         add(Registration.EXPLOSIVE_SPEAR.get(), "§cExplosive Spear");
         add("slugcraft.explosive_spear_description", "A spear that explodes on impact.");

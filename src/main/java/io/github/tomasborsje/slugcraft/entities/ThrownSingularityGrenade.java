@@ -138,6 +138,7 @@ public class ThrownSingularityGrenade extends ThrowableItemProjectile {
             this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_EXPLODE, net.minecraft.sounds.SoundSource.NEUTRAL, 0.85F, 1.0F);
             // Spawn a lightning bolt here
             LightningBolt lightningBolt = new LightningBolt(EntityType.LIGHTNING_BOLT, this.level());
+            lightningBolt.setDamage(0f);
             lightningBolt.setPos(this.getX(), this.getY(), this.getZ());
             this.level().addFreshEntity(lightningBolt);
 

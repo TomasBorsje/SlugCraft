@@ -43,5 +43,7 @@ public class SingularityGrenade extends Item {
     @Override
     public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
         pTooltipComponents.add(Component.translatable("slugcraft.singularity_grenade_description"));
+        pTooltipComponents.add(Component.literal(""));
+        pTooltipComponents.add(Component.translatable("slugcraft.singularity_grenade_description_two"));
     }
 }
