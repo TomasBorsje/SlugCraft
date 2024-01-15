@@ -12,15 +12,15 @@ public class SlugCraftConfig
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     private static final ForgeConfigSpec.IntValue WORLD_BORDER_START_SIZE = BUILDER
             .comment("The start size of the world border.")
-            .defineInRange("worldBorderStartSize", 225, 0, Integer.MAX_VALUE);
+            .defineInRange("worldBorderStartSize", 250, 0, Integer.MAX_VALUE);
 
     private static final ForgeConfigSpec.IntValue WORLD_BORDER_END_SIZE = BUILDER
             .comment("The end size of the world border.")
-            .defineInRange("worldBorderEndSize", 30, 1, Integer.MAX_VALUE);
+            .defineInRange("worldBorderEndSize", 50, 1, Integer.MAX_VALUE);
 
     private static final ForgeConfigSpec.IntValue QUICKFIRE_ROUND_TIME = BUILDER
             .comment("The time in seconds for a round of Quickfire.")
-            .defineInRange("quickfireRoundTime", 600, 1, Integer.MAX_VALUE);
+            .defineInRange("quickfireRoundTime", 900, 1, Integer.MAX_VALUE);
 
     private static final ForgeConfigSpec.IntValue SAINT_SECONDS_PER_KARMA_LEVEL = BUILDER
             .comment("The time in seconds for Saint to gain a karma level.")
@@ -28,7 +28,7 @@ public class SlugCraftConfig
 
     private static final ForgeConfigSpec.IntValue QUICKFIRE_GRACE_PERIOD_TIME = BUILDER
             .comment("The time in seconds until the grace period ends.")
-            .defineInRange("quickfireGracePeriodTime", 20, 1, Integer.MAX_VALUE);
+            .defineInRange("quickfireGracePeriodTime", 60, 1, Integer.MAX_VALUE);
 
     private static final ForgeConfigSpec.IntValue QUICKFIRE_HARD_RAIN_DELAY = BUILDER
             .comment("Time until the hard rain starts after the world border has closed.")

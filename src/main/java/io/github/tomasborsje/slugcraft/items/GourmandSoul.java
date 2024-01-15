@@ -2,6 +2,7 @@ package io.github.tomasborsje.slugcraft.items;
 
 import io.github.tomasborsje.slugcraft.core.Registration;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -10,15 +11,19 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class GourmandSoul extends Item {
-    public static List<Item> CRAFTABLES = List.of(
-            Registration.SPEAR.get(),
-            Registration.EXPLOSIVE_SPEAR.get(),
-            Registration.SPORE_PUFF.get());
+    public static final List<ResourceLocation> CRAFTABLES = List.of(
+            new ResourceLocation("slugcraft", "explosive_spear"),
+            new ResourceLocation("slugcraft", "spear"),
+            new ResourceLocation("slugcraft", "spore_puff"),
+            new ResourceLocation("minecraft", "golden_apple"),
+            new ResourceLocation("minecraft", "lava_bucket")
+    );
     public GourmandSoul() {
         super(Registration.ITEM_PROPERTIES);
     }

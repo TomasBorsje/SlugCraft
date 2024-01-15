@@ -28,6 +28,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -39,6 +40,7 @@ public class QuickfireCapability implements IQuickfireCapability {
     public static boolean isPreRoundRunning = false;
     public static int roundTime = 0;
     public static int preRoundTime = 0;
+    public static int trueTicks = 0;
     public static int preRoundDisplayTime = 2;
     public final static float THREAT_MUSIC_DISTANCE = 13.0f;
     public final static int THREAT_MUSIC_TIME = 15;
@@ -50,7 +52,6 @@ public class QuickfireCapability implements IQuickfireCapability {
     private final static HashMap<Player, Integer> gourmandEatTimers = new HashMap<>();
     private final static HashMap<Player, Integer> gourmandEatCounts = new HashMap<>();
     private final Random random = new Random();
-    private boolean lastTickRoundRunning = false;
     private StartPoint startPoint;
 
     // Use reflection to get the getChunks() method of ChunkMap
@@ -76,6 +77,7 @@ public class QuickfireCapability implements IQuickfireCapability {
     @Override
     public void startRound(ServerLevel level) {
         roundTime = 0;
+        trueTicks = 0;
 
         // Empty all round data
         gourmandEatTimers.clear();
@@ -134,9 +136,10 @@ public class QuickfireCapability implements IQuickfireCapability {
 
         // Set world border to center on player
         WorldBorder border = level.getWorldBorder();
-        border.lerpSizeBetween(SlugCraftConfig.worldBorderStartSize, SlugCraftConfig.worldBorderEndSize, SlugCraftConfig.quickfireRoundTime * 1000L);
         border.setDamageSafeZone(1);
         border.setDamagePerBlock(0.2);
+        // Set size to max
+        border.setSize(SlugCraftConfig.worldBorderStartSize);
         setRoundRunning(true);
     }
 
@@ -162,7 +165,9 @@ public class QuickfireCapability implements IQuickfireCapability {
         // Set all player's health to 20
         executeCommand(level, "/effect give @a minecraft:instant_health 1 19");
         // Set all player's hunger to 20
-        executeCommand(level, "/effect give @a minecraft:saturation 1 19");
+        level.getServer().getPlayerList().getPlayers().forEach(player1 -> {
+            player1.getFoodData().setFoodLevel(20);
+        });
     }
 
     private boolean isAlive(ServerPlayer player) {
@@ -172,17 +177,15 @@ public class QuickfireCapability implements IQuickfireCapability {
 
     @Override
     public void tickWorld(ServerLevel level) {
-        // If the round was running last tick but not this tick, end all threat musics again
-        // This stops threat music that started on the same tick the round ended
-        if(lastTickRoundRunning && !isRoundRunning) {
+        trueTicks++;
+        // Stop threat music every 30 ticks if the round is not running
+        if(trueTicks % 30 == 0 && !isPreRoundRunning && !isRoundRunning) {
             PacketHandler.sendToAll(new StopThreatMusicPacket());
         }
 
         if (isPreRoundRunning) {
             // Increment preRoundTime;
             preRoundTime++;
-
-            SlugCraft.LOGGER.info("Pre-round time: " + preRoundTime + " display = " + preRoundDisplayTime);
 
             // Every second, show a random map cosmetically
             if (preRoundTime % preRoundDisplayTime == 0 && preRoundDisplayTime < 28) {
@@ -192,9 +195,9 @@ public class QuickfireCapability implements IQuickfireCapability {
                 PacketHandler.sendToAll(new PlayClientsideSoundPacket(SoundEvents.EXPERIENCE_ORB_PICKUP.getLocation()));
 
                 // If this is the last iteration, select a random NEW map, otherwise random cosmetic map
-                if (preRoundDisplayTime + 2 > 28) {
+                if (preRoundDisplayTime + 4 == 28) {
                     startPoint = StartPoints.getRandomNewStartPoint();
-                } else {
+                } else if (preRoundDisplayTime + 4 < 28){
                     startPoint = StartPoints.getRandomStartPoint();
                 }
                 // Show a title to all players
@@ -239,7 +242,7 @@ public class QuickfireCapability implements IQuickfireCapability {
                 }
             }
             // If only 1 living player remains, end the round
-            if (livingPlayers.size() == 1 || livingPlayers.isEmpty()) {
+            if (livingPlayers.size() == -1 || livingPlayers.isEmpty()) {
                 // Show round end title to all players
                 if(!livingPlayers.isEmpty()) {
                     executeCommand(level, "/title @a subtitle \"" + livingPlayers.get(0).getName().getString() + " wins!\"");
@@ -367,13 +370,20 @@ public class QuickfireCapability implements IQuickfireCapability {
                                 // If the player has eaten 2 items, reset their eat count and give them a spear
                                 if (eatCount == 2) {
                                     gourmandEatCounts.put(player, 0);
-                                    // Get a random item from GourmandSoul.CRAFTABLES
-                                    Item craftedItem = GourmandSoul.CRAFTABLES.get(random.nextInt(GourmandSoul.CRAFTABLES.size()));
-                                    // Give the player the item
-                                    ItemStack craftedItemStack = new ItemStack(craftedItem);
-                                    player.getInventory().setItem(player.getInventory().selected, craftedItemStack);
-                                    // Send a message to the player
-                                    player.sendSystemMessage(Component.translatable("message.slugcraft.gourmand.item_craft", craftedItemStack.getHoverName().getString()));
+                                    while(true) {
+                                        // Get a random ResourceLocation from the list of craftables
+                                        ResourceLocation itemKey = GourmandSoul.CRAFTABLES.get(random.nextInt(GourmandSoul.CRAFTABLES.size()));
+                                        // Check the item is registered
+                                        if(!ForgeRegistries.ITEMS.containsKey(itemKey)) {
+                                            continue;
+                                        }
+                                        // Give the player the item
+                                        ItemStack craftedItemStack = new ItemStack(ForgeRegistries.ITEMS.getValue(itemKey));
+                                        player.getInventory().setItem(player.getInventory().selected, craftedItemStack);
+                                        // Send a message to the player
+                                        player.sendSystemMessage(Component.translatable("message.slugcraft.gourmand.item_craft", craftedItemStack.getHoverName().getString()));
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -384,7 +394,6 @@ public class QuickfireCapability implements IQuickfireCapability {
                 }
             }
         }
-        lastTickRoundRunning = isRoundRunning;
     }
 
     private void doProximityThreatMusic(ServerLevel level) {
@@ -440,14 +449,25 @@ public class QuickfireCapability implements IQuickfireCapability {
         if (roundTime == SlugCraftConfig.quickfireGracePeriodTime * 20) {
             executeCommand(level, "/difficulty normal");
             // Show all players a title
-            executeCommand(level, "/title @a title \"Grace period over!\"");
+            executeCommand(level, "/title @a title \"§cGrace period over!\"");
+        }
+        // If we have more than 5 minutes left
+        if (roundTime % (20*120) == 0 && roundTime < SlugCraftConfig.quickfireRoundTime * 20 - (5 * 60 * 20)) {
+            // Every 2 minutes, give everyone a bonus chest and send them a message
+            executeCommand(level, "/give @a chest{BlockEntityTag:{LootTable:\"minecraft:chests/village/village_weaponsmith\"},display:{Name:\"{\\\"text\\\":\\\"Supply Crate\\\",\\\"color\\\":\\\"gold\\\",\\\"bold\\\":true}\"}}");
+            broadcastMessage(level, Component.literal("You got a supply crate!").withStyle(Style.EMPTY.withBold(true).withColor(net.minecraft.ChatFormatting.GOLD)));
         }
 
         // Check if we have 5 minutes left
-        if (roundTime == SlugCraftConfig.quickfireRoundTime * 20 - 5 * 60 * 20) {
+        if (roundTime == SlugCraftConfig.quickfireRoundTime * 20 - (5 * 60 * 20)) {
             // If so, display a title to all players
             executeCommand(level, "/title @a reset");
-            executeCommand(level, "/title @a title \"5 minutes left!\"");
+            executeCommand(level, "/title @a times 10t 60t 10t");
+            executeCommand(level, "/title @a subtitle \"5 minutes left!\"");
+            executeCommand(level, "/title @a title \"§cWorld border closing!\"");
+            // Start closing the world border to min size
+            WorldBorder border = level.getWorldBorder();
+            border.lerpSizeBetween(SlugCraftConfig.worldBorderStartSize, SlugCraftConfig.worldBorderEndSize, 5 * 60 * 1000L);
             SlugCraft.LOGGER.info("5 minutes left!");
         }
         // If we have no time left, start the rain and threat music

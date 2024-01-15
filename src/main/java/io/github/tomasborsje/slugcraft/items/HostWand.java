@@ -29,6 +29,8 @@ public class HostWand extends Item {
             pLevel.getCapability(Registration.QUICKFIRE_HANDLER).ifPresent(quickFire -> {
                 quickFire.startRound((ServerLevel) pLevel);
             });
+            // Center worldborder on player
+            pLevel.getWorldBorder().setCenter(pPlayer.getX(), pPlayer.getZ());
         }
 
         return super.use(pLevel, pPlayer, pUsedHand);

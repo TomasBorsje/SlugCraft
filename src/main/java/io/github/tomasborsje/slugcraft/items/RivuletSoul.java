@@ -22,7 +22,8 @@ public class RivuletSoul extends Item {
 
     @Override
     public void inventoryTick(ItemStack pStack, Level pLevel, Entity pEntity, int pSlotId, boolean pIsSelected) {
-        if(pIsSelected && pEntity instanceof Player player) {
+        // Check the item is in the player's offhand
+        if (pEntity instanceof Player player && player.getOffhandItem() == pStack) {
             // Rivulet soul grants speed and jump height
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 20, 2, false, false));
             player.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 20, 5, false, false));

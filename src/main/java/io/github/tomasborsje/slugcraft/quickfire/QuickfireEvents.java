@@ -191,11 +191,11 @@ public class QuickfireEvents {
         else if(event.getEntity() instanceof ServerPlayer hurtPlayer && event.getSource().getEntity() != null) {
             ResourceLocation songKey = StartThreatMusicPacket.randomThreat();
             if(QuickfireCapability.remainingThreatMusicTicks.getOrDefault(hurtPlayer, 0) <= 0) {
-                    SlugCraft.LOGGER.info("Starting shorter i-was-attacked threat music for " + hurtPlayer.getDisplayName().getString());
+                    SlugCraft.LOGGER.info("Starting i-was-attacked threat music for " + hurtPlayer.getDisplayName().getString());
                     PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), hurtPlayer);
             }
                 // Half as long threat music when you get hurt
-            QuickfireCapability.remainingThreatMusicTicks.put(hurtPlayer, QuickfireCapability.THREAT_MUSIC_TIME*10);
+            QuickfireCapability.remainingThreatMusicTicks.put(hurtPlayer, QuickfireCapability.THREAT_MUSIC_TIME*12);
         }
     }
 
@@ -272,7 +272,7 @@ public class QuickfireEvents {
                 canArtificerDoubleJump = false;
 
                 // Set player velocity in the direction of their look vector
-                player.setDeltaMovement(player.getLookAngle().multiply(1.5, 1.5, 1.5));
+                player.setDeltaMovement(player.getLookAngle().normalize().scale(1.5f));
                 // Create an explosion at the player's feet
                 player.level().explode(player, player.getX(), player.getY()-0.5f, player.getZ(), 1.5f, Level.ExplosionInteraction.NONE);
                 // Increase the player's jump tolerance and damage them if it is too high

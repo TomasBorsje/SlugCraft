@@ -24,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
 public class ThrownSingularityGrenade extends ThrowableItemProjectile {
     private final static float HURT_RADIUS = 5.5f;
     private final static float PULL_SPEED = 2.5f;
-    private final static float PULL_RADIUS = 32f;
+    private final static float PULL_RADIUS = 24f;
     private final static int LIFETIME = 80;
     private int ticksExploding = 0;
     private boolean exploded;
@@ -72,7 +72,7 @@ public class ThrownSingularityGrenade extends ThrowableItemProjectile {
             ticksExploding++;
             this.setDeltaMovement(Vec3.ZERO);
 
-            // Every 3 ticks, get all players within 32 blocks and pull them in
+            // Every 3 ticks, get all players within PULL_RADIUS blocks and pull them in
             if (ticksExploding % 2 == 0) {
                 for (Entity entity : this.level().getEntities(this, this.getBoundingBox().inflate(PULL_RADIUS))) {
                     // Don't affect self
