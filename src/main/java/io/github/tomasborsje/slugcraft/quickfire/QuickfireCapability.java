@@ -455,7 +455,7 @@ public class QuickfireCapability implements IQuickfireCapability {
         if (roundTime % (20*120) == 0 && roundTime < SlugCraftConfig.quickfireRoundTime * 20 - (5 * 60 * 20)) {
             // Every 2 minutes, give everyone a bonus chest and send them a message
             executeCommand(level, "/give @a chest{BlockEntityTag:{LootTable:\"minecraft:chests/village/village_weaponsmith\"},display:{Name:\"{\\\"text\\\":\\\"Supply Crate\\\",\\\"color\\\":\\\"gold\\\",\\\"bold\\\":true}\"}}");
-            broadcastMessage(level, Component.literal("You got a supply crate!").withStyle(Style.EMPTY.withBold(true).withColor(net.minecraft.ChatFormatting.GOLD)));
+            broadcastMessage(level, Component.literal("You got a supply crate!").withStyle(Style.EMPTY.withBold(true).withColor(net.minecraft.ChatFormatting.GOLD).withUnderlined(true)));
         }
 
         // Check if we have 5 minutes left
