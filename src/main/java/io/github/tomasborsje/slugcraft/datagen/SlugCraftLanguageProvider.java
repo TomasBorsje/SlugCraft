@@ -39,7 +39,7 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
         add("item.slugcraft.needle.receive_hit", "§5§lYou were struck by a needle!");
         add("slugcraft.needle_description", "Throw at an enemy to slow them, gaining speed and an absorption shield.");
         add("message.slugcraft.quickfire.needle_gained", "§5§lYou created a needle!");
-        add("slugcraft.spearmaster_power", "Gain a throwable needle every 30 seconds, up to three.");
+        add("slugcraft.spearmaster_power", "Gain a throwable needle every 15 seconds, up to three.");
         add("slugcraft.spearmaster_power_two", "Hitting a player with a needle grants speed, an absorption shield, and fills your food.");
         add("slugcraft.spearmaster_haiku_one", "§8§oA resourceful being");
         add("slugcraft.spearmaster_haiku_two", "§8§oCreate your own unique weapons");
@@ -54,7 +54,7 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
         // Saint
         add(Registration.SAINT_SOUL.get(), "§2§lSoul of the Saint");
         add("slugcraft.saint_power", "Gain a karma level every minute you go without damaging a living creature.");
-        add("slugcraft.saint_power_two", "At max karma you §2§lAscend§r, gaining bursts of flight and permanent regeneration.");
+        add("slugcraft.saint_power_two", "At max karma you §2§lAscend§r, gaining flight and permanent regeneration.");
         add("slugcraft.karma_level_reminder", "\uE000  \uE001  \uE002  \uE003  \uE004  \uE005  \uE006  \uE007  \uE008  \uE009");
         add("message.slugcraft.quickfire.saint_hurt", "§r§f\uE000  §2§lYou  hurt  something!  Your  karma  level  has  droppedq.§r§f  \uE000");
         add("message.slugcraft.quickfire.saint_ascend", "§2You have ascended!");

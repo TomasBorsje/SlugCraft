@@ -12,7 +12,7 @@ public class StartPoints {
     public static final StartPoint VARSITY = addStartPoint(-565,1829, "Varsity Circle", 12);
     public static final StartPoint MALL = addStartPoint(-445, 1957, "Shopping Mall", 8);
     public static final StartPoint CHURCH = addStartPoint(-375,2121,"Church", 8);
-    public static final StartPoint CASINO = addStartPoint(-249,2282,"Casino", 8);
+    public static final StartPoint CASINO = addStartPoint(-249,2256,"Casino", 5);
     public static final StartPoint TRAINYARD = addStartPoint(-10,2218,"Trainyard", 6);
     public static final StartPoint DOCKS = addStartPoint(175,2113, "Docks", 9);
     public static final StartPoint FERRY_TERMINAL = addStartPoint(130,1805,"Ferry Terminal", 4);
@@ -30,6 +30,7 @@ public class StartPoints {
     public static final StartPoint FOOTBALL_FIELD = addStartPoint(-896,2095,"Football Field", 8);
     public static final StartPoint CONSTRUCTION = addStartPoint(-726,2166, "Under Construction", 8);
     public static final StartPoint MILITARY_BASE = addStartPoint(906,2036,"Military Base", 8);
+    public static final StartPoint JUNKYARD = addStartPoint(-669, 2353,"Junkyard", 7);
 
     public static StartPoint getRandomStartPoint() {
         // Return random from all start points

@@ -145,6 +145,8 @@ public class QuickfireEvents {
                 if(quickfire.getRoundRunning()) {
                     player.setGameMode(GameType.SPECTATOR);
                     player.setHealth(20);
+                    // Clear player's effects
+                    player.removeAllEffects();
                     event.setCanceled(true);
                     // Broadcast message to all players that the player died
                     QuickfireCapability.broadcastMessage((ServerLevel) event.getEntity().level(), Component.translatable("message.slugcraft.quickfire.player_died", event.getEntity().getDisplayName()));
@@ -223,7 +225,7 @@ public class QuickfireEvents {
 
             // If the round is running, cancel the event
             quickfireData.ifPresent(quickfire -> {
-                if(quickfire.getRoundRunning() && !replacedChests.contains(event.getPos())) {
+                if(quickfire.getRoundRunning()) {
                     // Replace the chest with a new chest that has a loot table
                     replaceChest(level, event.getPos());
                     // Replace all adjacent chests
@@ -239,10 +241,11 @@ public class QuickfireEvents {
     }
 
     static void replaceChest(ServerLevel level, BlockPos pos) {
+        if(replacedChests.contains(pos)) { return; }
         replacedChests.add(pos);
         // Replace the chest with a new chest that has a loot table
         ChestBlockEntity newChest = new ChestBlockEntity(pos, Blocks.CHEST.defaultBlockState());
-        newChest.setLootTable(new ResourceLocation("minecraft", "chests/end_city_treasure"), random.nextLong());
+        newChest.setLootTable(new ResourceLocation("minecraft", "chests/village/village_weaponsmith"), random.nextLong());
         // Add the new chest to the level
         level.setBlockEntity(newChest);
     }

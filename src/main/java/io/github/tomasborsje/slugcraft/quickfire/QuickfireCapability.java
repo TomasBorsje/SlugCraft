@@ -47,23 +47,12 @@ public class QuickfireCapability implements IQuickfireCapability {
     public final static HashMap<Player, Integer> karmaLevels = new HashMap<>();
     public final static HashMap<Player, Integer> remainingThreatMusicTicks = new HashMap<>();
     private final static UUID rotLevelUUID = UUID.fromString("f186b657-e16b-448f-ad45-37186ee858e8");
-    private final static int TICKS_PER_HUNTER_ROT = 20 * 60; // 1 minute
-    private final static int TICKS_PER_SPEARMASTER_NEEDLE = 20 * 30;
+    private final static int TICKS_PER_HUNTER_ROT = 20 * 60 * 3; // 1 minute
+    private final static int TICKS_PER_SPEARMASTER_NEEDLE = 20 * 15;
     private final static HashMap<Player, Integer> gourmandEatTimers = new HashMap<>();
     private final static HashMap<Player, Integer> gourmandEatCounts = new HashMap<>();
     private final Random random = new Random();
     private StartPoint startPoint;
-
-    // Use reflection to get the getChunks() method of ChunkMap
-//    Method getChunks;
-//    {
-//        try {
-//            getChunks = ChunkMap.class.getDeclaredMethod("getChunks");
-//            getChunks.setAccessible(true);
-//        } catch (NoSuchMethodException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
 
     /**
      * Executes a text command server-side.
@@ -72,6 +61,27 @@ public class QuickfireCapability implements IQuickfireCapability {
         MinecraftServer server = level.getServer();
         server.getGameRules().getRule(GameRules.RULE_SENDCOMMANDFEEDBACK).set(false, server);
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), command);
+    }
+
+    private void resetPlayer(ServerPlayer player) {
+        // Clear effects and inventory
+        player.removeAllEffects();
+        player.getInventory().clearContent();
+
+        player.getAbilities().mayfly = false;
+        player.onUpdateAbilities();
+        player.getFoodData().setFoodLevel(20);
+
+        // Remove the max health modifier from Rotting
+        if(player.getAttribute(Attributes.MAX_HEALTH) != null) {
+            player.getAttribute(Attributes.MAX_HEALTH).removeModifier(rotLevelUUID);
+        }
+
+        // Set player to max hp
+        player.setHealth(player.getMaxHealth());
+
+        // Remove any rot they may have
+        player.getPersistentData().putInt("rotLevel", 0);
     }
 
     @Override
@@ -91,27 +101,22 @@ public class QuickfireCapability implements IQuickfireCapability {
         executeCommand(level, "/title @a title \"Go!\"");
 
         // Set weather to clear
-        level.setWeatherParameters(0, 6000, false, false);
+        level.setWeatherParameters(0, 6000000, false, false);
 
         PacketHandler.sendToAll(new QuickfireRoundStartPacket());
+
+        broadcastMessage(level, Component.translatable("message.slugcraft.quickfire.round_start"));
+        broadcastMessage(level, Component.literal(""));
 
         // For each player
         level.getServer().getPlayerList().getPlayers().forEach(player -> {
             // Clear effects and inventory
-            player.removeAllEffects();
-            player.getInventory().clearContent();
-
-            player.getAbilities().mayfly = false;
-            player.onUpdateAbilities();
-
-            // Remove the max health modifier from Rotting
-            if(player.getAttribute(Attributes.MAX_HEALTH) != null) {
-                player.getAttribute(Attributes.MAX_HEALTH).removeModifier(rotLevelUUID);
-            }
+            resetPlayer(player);
 
             // Give a random Slugcat soul into the offhand
             Item slugcatSoul = SLUGCAT_SOULS[random.nextInt(SLUGCAT_SOULS.length)].get();
-            player.getInventory().setItem(Inventory.SLOT_OFFHAND, new ItemStack(slugcatSoul));
+            ItemStack stack = new ItemStack(slugcatSoul);
+            player.getInventory().setItem(Inventory.SLOT_OFFHAND, stack);
             // If the slugcat soul is enot, give the player a singularity bomb
             if(slugcatSoul == Registration.ENOT_SOUL.get()) {
                 player.getInventory().setItem(player.getInventory().selected, new ItemStack(Registration.SINGULARITY_GRENADE.get()));
@@ -121,11 +126,13 @@ public class QuickfireCapability implements IQuickfireCapability {
                 player.getInventory().setItem(player.getInventory().selected, new ItemStack(Registration.SPEAR.get()));
             }
 
+            // Broadcast their name and soul to all players
+            broadcastMessage(level, Component.literal(player.getName().getString() + " - " + stack.getHoverName().getString()));
+
             // Set player's subtitle to their current soul
             executeCommand(level, "/title " + player.getName().getString() + " subtitle \""+Component.translatable(slugcatSoul.getDescriptionId()).getString()+"\"");
-            // Send a message
-            player.sendSystemMessage(Component.translatable("message.slugcraft.quickfire.round_start"));
         });
+
 
         // Set world difficulty to peaceful
         executeCommand(level, "/difficulty peaceful");
@@ -150,7 +157,7 @@ public class QuickfireCapability implements IQuickfireCapability {
         preRoundDisplayTime = 2;
 
         // Clear weather and set difficulty to peaceful
-        level.setWeatherParameters(0, 6000, false, false);
+        executeCommand(level, "/weather clear 2000s");
         executeCommand(level, "/difficulty peaceful");
         // Set all player gamemodes to spectator
         executeCommand(level, "/gamemode spectator @a");
@@ -164,10 +171,8 @@ public class QuickfireCapability implements IQuickfireCapability {
         executeCommand(level, "/clear @a");
         // Set all player's health to 20
         executeCommand(level, "/effect give @a minecraft:instant_health 1 19");
-        // Set all player's hunger to 20
-        level.getServer().getPlayerList().getPlayers().forEach(player1 -> {
-            player1.getFoodData().setFoodLevel(20);
-        });
+        // Reset all players
+        level.getServer().getPlayerList().getPlayers().forEach(this::resetPlayer);
     }
 
     private boolean isAlive(ServerPlayer player) {
@@ -191,14 +196,14 @@ public class QuickfireCapability implements IQuickfireCapability {
             if (preRoundTime % preRoundDisplayTime == 0 && preRoundDisplayTime < 28) {
                 preRoundDisplayTime += 2;
                 preRoundTime = 0;
-                // Play an xp pickup sound to all players via packet
-                PacketHandler.sendToAll(new PlayClientsideSoundPacket(SoundEvents.EXPERIENCE_ORB_PICKUP.getLocation()));
 
                 // If this is the last iteration, select a random NEW map, otherwise random cosmetic map
                 if (preRoundDisplayTime + 4 == 28) {
                     startPoint = StartPoints.getRandomNewStartPoint();
+                    PacketHandler.sendToAll(new PlayClientsideSoundPacket(SoundEvents.EXPERIENCE_ORB_PICKUP.getLocation()));
                 } else if (preRoundDisplayTime + 4 < 28){
                     startPoint = StartPoints.getRandomStartPoint();
+                    PacketHandler.sendToAll(new PlayClientsideSoundPacket(SoundEvents.EXPERIENCE_ORB_PICKUP.getLocation()));
                 }
                 // Show a title to all players
                 executeCommand(level, "/title @a subtitle \"§eChoosing map...\"");
@@ -221,7 +226,9 @@ public class QuickfireCapability implements IQuickfireCapability {
                 executeCommand(level, "/title @a subtitle \"§eStarting in 30 seconds!\"");
                 executeCommand(level, "/title @a title \"" + startPoint.name + "\"");
                 // Spreadplayers around worldborder
-                executeCommand(level, "/spreadplayers " + startPoint.x + " " + startPoint.z + " " + 0 + " " + startPoint.spreadRadius + " false @a");
+                executeCommand(level, "/spreadplayers " + startPoint.x + " " + startPoint.z + " " + 0 + " " + startPoint.spreadRadius/2 + " false @a");
+                // Spreadplayers around UNDER y=80 after
+                executeCommand(level, "/spreadplayers " + startPoint.x + " " + startPoint.z + " " + 0 + " " + startPoint.spreadRadius/2 + " under 80 false @a");
                 // Set all players gamemodes to adventure
                 executeCommand(level, "/gamemode adventure @a");
             }
@@ -548,6 +555,8 @@ public class QuickfireCapability implements IQuickfireCapability {
         if (pLivingEntity instanceof Player player) {
             player.sendSystemMessage(Component.translatable("message.slugcraft.rotting"));
         }
+        // Hurt player for 0 damage so health updates
+        pLivingEntity.hurt(pLivingEntity.damageSources().generic(), 0.01f);
 
         // If the player's rot level is 10 or more, apply wither and huge slowness
         if (rotLevel >= 10) {
