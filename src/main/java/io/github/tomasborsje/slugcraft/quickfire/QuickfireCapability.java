@@ -42,7 +42,8 @@ public class QuickfireCapability implements IQuickfireCapability {
     public static int preRoundTime = 0;
     public static int trueTicks = 0;
     public static int preRoundDisplayTime = 2;
-    public final static float THREAT_MUSIC_DISTANCE = 13.0f;
+    public static float roundTimeMultiplier = 1.0f;
+    public final static HashMap<Player, Integer> resistanceLevels = new HashMap<>();
     public final static int THREAT_MUSIC_TIME = 15;
     public final static HashMap<Player, Integer> karmaLevels = new HashMap<>();
     public final static HashMap<Player, Integer> remainingThreatMusicTicks = new HashMap<>();
@@ -59,8 +60,10 @@ public class QuickfireCapability implements IQuickfireCapability {
      */
     private void executeCommand(Level level, String command) {
         MinecraftServer server = level.getServer();
-        server.getGameRules().getRule(GameRules.RULE_SENDCOMMANDFEEDBACK).set(false, server);
-        server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), command);
+        if (server != null) {
+            server.getGameRules().getRule(GameRules.RULE_SENDCOMMANDFEEDBACK).set(false, server);
+            server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), command);
+        }
     }
 
     private void resetPlayer(ServerPlayer player) {
@@ -140,6 +143,11 @@ public class QuickfireCapability implements IQuickfireCapability {
         executeCommand(level, "/kill @e[type=item]");
         // Set all player gamemodes to survival
         executeCommand(level, "/gamemode survival @a");
+
+        // Give all players resistance equal to their value in resistanceLevels
+        resistanceLevels.forEach((player, resistanceLevel) -> {
+            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, -1, resistanceLevel));
+        });
 
         // Set world border to center on player
         WorldBorder border = level.getWorldBorder();
@@ -227,12 +235,12 @@ public class QuickfireCapability implements IQuickfireCapability {
                 executeCommand(level, "/title @a title \"" + startPoint.name + "\"");
                 // Spreadplayers around worldborder
                 executeCommand(level, "/spreadplayers " + startPoint.x + " " + startPoint.z + " " + 0 + " " + startPoint.spreadRadius/2 + " false @a");
-                // Spreadplayers around UNDER y=80 after
-                executeCommand(level, "/spreadplayers " + startPoint.x + " " + startPoint.z + " " + 0 + " " + startPoint.spreadRadius/2 + " under 80 false @a");
                 // Set all players gamemodes to adventure
                 executeCommand(level, "/gamemode adventure @a");
             }
             if(preRoundTime == 30*20) {
+                // Set round time multiplier
+                roundTimeMultiplier = startPoint.roundTimeMultiplier;
                 // Start round
                 startRound(level);
                 isPreRoundRunning = false;
@@ -249,7 +257,7 @@ public class QuickfireCapability implements IQuickfireCapability {
                 }
             }
             // If only 1 living player remains, end the round
-            if (livingPlayers.size() == -1 || livingPlayers.isEmpty()) {
+            if (livingPlayers.size() == 1 || livingPlayers.isEmpty()) {
                 // Show round end title to all players
                 if(!livingPlayers.isEmpty()) {
                     executeCommand(level, "/title @a subtitle \"" + livingPlayers.get(0).getName().getString() + " wins!\"");
@@ -299,6 +307,8 @@ public class QuickfireCapability implements IQuickfireCapability {
                             player.getInventory().add(new ItemStack(Registration.NEEDLE.get()));
                             // Send a message to the player
                             player.sendSystemMessage(Component.translatable("message.slugcraft.quickfire.needle_gained"));
+                            // Play bee sting sound to the player
+                            PacketHandler.sendToClient(new PlayClientsideSoundPacket(SoundEvents.BEE_STING.getLocation()), player);
                         }
                     }
                 }
@@ -384,7 +394,9 @@ public class QuickfireCapability implements IQuickfireCapability {
                                         if(!ForgeRegistries.ITEMS.containsKey(itemKey)) {
                                             continue;
                                         }
+
                                         // Give the player the item
+                                        //noinspection DataFlowIssue - Suppressed as we use containsKey() to check for existence
                                         ItemStack craftedItemStack = new ItemStack(ForgeRegistries.ITEMS.getValue(itemKey));
                                         player.getInventory().setItem(player.getInventory().selected, craftedItemStack);
                                         // Send a message to the player
@@ -405,33 +417,33 @@ public class QuickfireCapability implements IQuickfireCapability {
 
     private void doProximityThreatMusic(ServerLevel level) {
         // If grace period is still active, return
-        if(roundTime < SlugCraftConfig.quickfireGracePeriodTime*20) {
+        if(roundTime < SlugCraftConfig.quickfireGracePeriodTime*20*roundTimeMultiplier) {
             return;
         }
 
-        // For each player, check if they are closer than 10 blocks to another player
+//        // For each player, check if they are closer than 10 blocks to another player
         List<ServerPlayer> players = level.getServer().getPlayerList().getPlayers();
-        for(ServerPlayer player : players) {
-            for(ServerPlayer otherPlayer : players) {
-                float squareXZDistance = (float) (player.getX() - otherPlayer.getX()) * (float) (player.getX() - otherPlayer.getX()) + (float) (player.getZ() - otherPlayer.getZ()) * (float) (player.getZ() - otherPlayer.getZ());
-                if(player != otherPlayer && squareXZDistance < THREAT_MUSIC_DISTANCE * THREAT_MUSIC_DISTANCE) {
-                    // If both players are alive, set both their threat music timers to 10 seconds
-                    if(isAlive(player) && isAlive(otherPlayer)) {
-                        // If the player's don't have threat music playing, start it
-                        ResourceLocation songKey = StartThreatMusicPacket.randomThreat();
-                        if(remainingThreatMusicTicks.getOrDefault(player, 0) <= 0) {
-                            PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), player);
-                        }
-                        if(remainingThreatMusicTicks.getOrDefault(otherPlayer, 0) <= 0) {
-                            PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), otherPlayer);
-                        }
-                        remainingThreatMusicTicks.put(player, THREAT_MUSIC_TIME*20);
-                        remainingThreatMusicTicks.put(otherPlayer, THREAT_MUSIC_TIME*20);
-                        //SlugCraft.LOGGER.info("Setting threat music timers to "+THREAT_MUSIC_TIME+" seconds for players " + player.getName().getString() + " and " + otherPlayer.getName().getString());
-                    }
-                }
-            }
-        }
+//        for(ServerPlayer player : players) {
+//            for(ServerPlayer otherPlayer : players) {
+//                float squareXZDistance = (float) (player.getX() - otherPlayer.getX()) * (float) (player.getX() - otherPlayer.getX()) + (float) (player.getZ() - otherPlayer.getZ()) * (float) (player.getZ() - otherPlayer.getZ());
+//                if(player != otherPlayer && squareXZDistance < THREAT_MUSIC_DISTANCE * THREAT_MUSIC_DISTANCE) {
+//                    // If both players are alive, set both their threat music timers to 10 seconds
+//                    if(isAlive(player) && isAlive(otherPlayer)) {
+//                        // If the player's don't have threat music playing, start it
+//                        ResourceLocation songKey = StartThreatMusicPacket.randomThreat();
+//                        if(remainingThreatMusicTicks.getOrDefault(player, 0) <= 0) {
+//                            PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), player);
+//                        }
+//                        if(remainingThreatMusicTicks.getOrDefault(otherPlayer, 0) <= 0) {
+//                            PacketHandler.sendToClient(new StartThreatMusicPacket(songKey), otherPlayer);
+//                        }
+//                        remainingThreatMusicTicks.put(player, THREAT_MUSIC_TIME*20);
+//                        remainingThreatMusicTicks.put(otherPlayer, THREAT_MUSIC_TIME*20);
+//                        //SlugCraft.LOGGER.info("Setting threat music timers to "+THREAT_MUSIC_TIME+" seconds for players " + player.getName().getString() + " and " + otherPlayer.getName().getString());
+//                    }
+//                }
+//            }
+//        }
 
         // Decrease all threat music timers by 1
         remainingThreatMusicTicks.replaceAll((k, v) -> v-1);
@@ -453,20 +465,22 @@ public class QuickfireCapability implements IQuickfireCapability {
 
     private void doTimedEvents(ServerLevel level) {
         // If we have reached the grace period time, set difficulty to normal again
-        if (roundTime == SlugCraftConfig.quickfireGracePeriodTime * 20) {
+        if (roundTime == (int)(SlugCraftConfig.quickfireGracePeriodTime * 20 * roundTimeMultiplier)) {
             executeCommand(level, "/difficulty normal");
             // Show all players a title
             executeCommand(level, "/title @a title \"§cGrace period over!\"");
         }
         // If we have more than 5 minutes left
-        if (roundTime % (20*120) == 0 && roundTime < SlugCraftConfig.quickfireRoundTime * 20 - (5 * 60 * 20)) {
+        if (roundTime % (int)(20*120*roundTimeMultiplier) == 0 && roundTime < (int)((SlugCraftConfig.quickfireRoundTime * 20 - (5 * 60 * 20))*roundTimeMultiplier)) {
             // Every 2 minutes, give everyone a bonus chest and send them a message
-            executeCommand(level, "/give @a chest{BlockEntityTag:{LootTable:\"minecraft:chests/village/village_weaponsmith\"},display:{Name:\"{\\\"text\\\":\\\"Supply Crate\\\",\\\"color\\\":\\\"gold\\\",\\\"bold\\\":true}\"}}");
+            executeCommand(level, "/give @a chest{BlockEntityTag:{LootTable:\"minecraft:chests/woodland_mansion\"},display:{Name:\"{\\\"text\\\":\\\"Supply Crate\\\",\\\"color\\\":\\\"gold\\\",\\\"bold\\\":true}\"}}");
             broadcastMessage(level, Component.literal("You got a supply crate!").withStyle(Style.EMPTY.withBold(true).withColor(net.minecraft.ChatFormatting.GOLD).withUnderlined(true)));
+            // Play xp gain sound to all players with packet
+            PacketHandler.sendToAll(new PlayClientsideSoundPacket(SoundEvents.EXPERIENCE_ORB_PICKUP.getLocation()));
         }
 
         // Check if we have 5 minutes left
-        if (roundTime == SlugCraftConfig.quickfireRoundTime * 20 - (5 * 60 * 20)) {
+        if (roundTime == (int)((SlugCraftConfig.quickfireRoundTime * 20 - (5 * 60 * 20)) * roundTimeMultiplier)) {
             // If so, display a title to all players
             executeCommand(level, "/title @a reset");
             executeCommand(level, "/title @a times 10t 60t 10t");
@@ -474,11 +488,11 @@ public class QuickfireCapability implements IQuickfireCapability {
             executeCommand(level, "/title @a title \"§cWorld border closing!\"");
             // Start closing the world border to min size
             WorldBorder border = level.getWorldBorder();
-            border.lerpSizeBetween(SlugCraftConfig.worldBorderStartSize, SlugCraftConfig.worldBorderEndSize, 5 * 60 * 1000L);
+            border.lerpSizeBetween(SlugCraftConfig.worldBorderStartSize, SlugCraftConfig.worldBorderEndSize, (long)(5 * 60 * 1000L * roundTimeMultiplier));
             SlugCraft.LOGGER.info("5 minutes left!");
         }
         // If we have no time left, start the rain and threat music
-        if (roundTime == SlugCraftConfig.quickfireRoundTime*20) {
+        if (roundTime == (int)(SlugCraftConfig.quickfireRoundTime * 20 * roundTimeMultiplier)) {
             SlugCraft.LOGGER.info("No time left, playing threat music and starting rain!");
             // Set time to night
             executeCommand(level, "/time set night");
@@ -500,7 +514,7 @@ public class QuickfireCapability implements IQuickfireCapability {
             }
         }
         // If we're past the hard rain delay, start the hard rain and wither
-        if (roundTime == SlugCraftConfig.quickfireRoundTime*20 + SlugCraftConfig.quickfireHardRainDelay*20) {
+        if (roundTime == (int)(SlugCraftConfig.quickfireRoundTime*20*roundTimeMultiplier) + SlugCraftConfig.quickfireHardRainDelay*20) {
             SlugCraft.LOGGER.info("10 seconds past round limit, starting hard rain + wither!");
             PacketHandler.sendToAll(new HardRainStartPacket());
             for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
@@ -512,6 +526,7 @@ public class QuickfireCapability implements IQuickfireCapability {
             }
         }
     }
+
 
     public void endRound(ServerLevel level, @Nullable Player winner) {
         // Set roundRunning to false
@@ -525,6 +540,16 @@ public class QuickfireCapability implements IQuickfireCapability {
 
         // Iterate all players and send a round end message
         if(winner != null) {
+            // Reduce winner's resist level by 2, min 0
+                if(resistanceLevels.containsKey(winner)) {
+                int resistanceLevel = resistanceLevels.get(winner);
+                resistanceLevel -= 2;
+                if(resistanceLevel < 0) {
+                    resistanceLevel = 0;
+                }
+                resistanceLevels.put(winner, resistanceLevel);
+            }
+
             level.getServer().getPlayerList().getPlayers().forEach(player -> {
                 player.sendSystemMessage(Component.translatable("message.slugcraft.quickfire.round_end", winner.getName().getString()));
             });

@@ -148,6 +148,8 @@ public class QuickfireEvents {
                     // Clear player's effects
                     player.removeAllEffects();
                     event.setCanceled(true);
+                    // Increase player's resistance level by 1, to a max of 2
+                    QuickfireCapability.resistanceLevels.put(player, Math.min(QuickfireCapability.resistanceLevels.getOrDefault(player, 0)+1, 2));
                     // Broadcast message to all players that the player died
                     QuickfireCapability.broadcastMessage((ServerLevel) event.getEntity().level(), Component.translatable("message.slugcraft.quickfire.player_died", event.getEntity().getDisplayName()));
                 }
@@ -161,7 +163,20 @@ public class QuickfireEvents {
         if(event.getEntity().level().isClientSide) { return; }
 
         // If the round isn't running or if the grace period is still active, don't do anything
-        if(!QuickfireCapability.isRoundRunning || QuickfireCapability.roundTime < SlugCraftConfig.quickfireGracePeriodTime*20) { return; }
+        if(!QuickfireCapability.isRoundRunning || QuickfireCapability.roundTime < SlugCraftConfig.quickfireGracePeriodTime*20*QuickfireCapability.roundTimeMultiplier) { return; }
+
+        // If the source was fall damage
+        if(event.getSource().is(DamageTypes.FALL)) {
+            // If the entity is a player and they have Gourmand soul in offhand
+            if(event.getEntity() instanceof ServerPlayer player && player.getInventory().getItem(Inventory.SLOT_OFFHAND).getItem() == Registration.GOURMAND_SOUL.get()) {
+                // Deal twice the fall damage to all other players within 3 blocks
+                for(Player otherPlayer : player.level().getEntitiesOfClass(Player.class, player.getBoundingBox().inflate(3))) {
+                    if(otherPlayer != player) {
+                        otherPlayer.hurt(player.level().damageSources().fall(), event.getAmount()*2);
+                    }
+                }
+            }
+        }
 
         // If the source is a player
         if(event.getSource().getEntity() instanceof ServerPlayer source) {
@@ -245,7 +260,7 @@ public class QuickfireEvents {
         replacedChests.add(pos);
         // Replace the chest with a new chest that has a loot table
         ChestBlockEntity newChest = new ChestBlockEntity(pos, Blocks.CHEST.defaultBlockState());
-        newChest.setLootTable(new ResourceLocation("minecraft", "chests/village/village_weaponsmith"), random.nextLong());
+        newChest.setLootTable(new ResourceLocation("minecraft:chests/village/village_weaponsmith"), random.nextLong());
         // Add the new chest to the level
         level.setBlockEntity(newChest);
     }

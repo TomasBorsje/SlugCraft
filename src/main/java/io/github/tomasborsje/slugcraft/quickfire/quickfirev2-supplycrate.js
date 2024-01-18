@@ -4,15 +4,16 @@ console.info('Loading Quickfire v2 Loot Tables!')
 
 LootJS.modifiers((event) => {
     event
-        .addLootTableModifier(/(.*:chests?\/.*)|(structory:.+)/)
+        //.addLootTableModifier(/(.*:chests?\/.*)|(structory:.+)/)
+        .addLootTableModifier("minecraft:chests/woodland_mansion")
 
         // Remove obsidian from the pool
-        .removeLoot("minecraft:obsidian")
+        .removeLoot(Ingredient.all)
 
 		// Random food, 30% chance
 		.pool((pool) => {
-            pool.randomChance(0.30);
-            pool.addWeightedLoot([1], [
+            pool.randomChance(1.0);
+            pool.addWeightedLoot([15], [
 				Item.of("alexsmobs:cooked_catfish").withChance(5),
 				Item.of("alexsmobs:boiled_emu_egg").withChance(5),
 				Item.of("create:sweet_roll").withChance(5),
@@ -20,7 +21,7 @@ LootJS.modifiers((event) => {
 			]);
 			pool.limitCount([3], [6]);
 		    pool.addLore(Text.green("UNCOMMON LOOT").bold());
-		}
+		})
 
 		// Random arrows, 25% chance
         .pool((pool) => {
@@ -102,42 +103,6 @@ LootJS.modifiers((event) => {
             pool.addLore(Text.green("UNCOMMON LOOT").bold());
         })
 
-        // 10% chance for splash potions of healing, poison, or blindness
-        .pool((pool) => {
-            pool.randomChance(0.1);
-            pool.addWeightedLoot([1, 2], [
-                Item.of("minecraft:splash_potion").withChance(1).apply((a) => {
-                    a.setPotion("minecraft:healing");
-                }),
-                Item.of("minecraft:splash_potion").withChance(1).apply((a) => {
-                    a.setPotion("minecraft:poison");
-                }),
-                Item.of("minecraft:splash_potion").withChance(1).apply((a) => {
-                    a.setPotion("minecraft:blindness");
-                })
-            ]);
-            pool.limitCount([1]);
-            pool.addLore(Text.green("UNCOMMON LOOT").bold());
-        })
-
-        // 10% chance for normal potions of strength, fire resistance, or speed
-        .pool((pool) => {
-            pool.randomChance(0.1);
-            pool.addWeightedLoot([1, 2], [
-                Item.of("minecraft:potion").withChance(1).apply((a) => {
-                    a.setPotion("minecraft:strength");
-                }),
-                Item.of("minecraft:potion").withChance(1).apply((a) => {
-                    a.setPotion("minecraft:fire_resistance");
-                }),
-                Item.of("minecraft:potion").withChance(1).apply((a) => {
-                    a.setPotion("minecraft:speed");
-                })
-            ]);
-            pool.limitCount([1]);
-            pool.addLore(Text.green("UNCOMMON LOOT").bold());
-        })
-
         // 10% chance for 1-3 random grenades from Thermal
         .pool((pool) => {
             pool.randomChance(0.1);
@@ -165,22 +130,6 @@ LootJS.modifiers((event) => {
             ]);
             pool.limitCount([1]);
             pool.addLore(Text.gold("LEGENDARY LOOT").bold().underlined());
-        }
-
-		
-	// --- GLOBAL LOOT ---
-	// Low level random enchants 50% of the time
-	event.addLootTableModifier(/(.*:chests?\/.*)|(structory:.+)/)
-		.randomChance(0.6)
-		.functions(!ItemFilter.ENCHANTED, (a) => {
-			a.enchantWithLevels([1, 5]);
-		});
-	
-	// 70% chance for degraded durability
-	event.addLootTableModifier(/(.*:chests?\/.*)|(structory:.+)/)
-		.randomChance(0.7)
-		.functions(ItemFilter.DAMAGEABLE, (a) => {
-			a.damage([0.1, 0.45]);
-		});
+        })
 		
 });

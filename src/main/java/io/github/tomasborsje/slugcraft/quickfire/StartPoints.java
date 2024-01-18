@@ -23,7 +23,7 @@ public class StartPoints {
     public static final StartPoint STADIUM = addStartPoint(-175,2121,"Stadium", 13);
     public static final StartPoint STAGE = addStartPoint(-777,1799,"Stage", 8);
     public static final StartPoint TENNIS_COURTS = addStartPoint(-1015, 1966,"Tennis Courts", 8);
-    public static final StartPoint EXCAVATION_SITE = addStartPoint(-1489, 2516,"Excavation Site", 12);
+    public static final StartPoint EXCAVATION_SITE = addStartPoint(-1489, 2516,"Excavation Site", 12, 0.25f);
     public static final StartPoint ALPINE_VILLAGE = addStartPoint(-197,2914,"Alpine Village", 8);
     public static final StartPoint FARMLAND = addStartPoint(-906,2395,"Farmland", 8);
     public static final StartPoint OUTSKIRTS = addStartPoint(-1009,2236,"Outskirts", 13);
@@ -49,6 +49,12 @@ public class StartPoints {
     }
     private static StartPoint addStartPoint(int x, int z, String name, int spreadRadius) {
         StartPoint pt = new StartPoint(x, z, name, spreadRadius);
+        BROVILLE_START_POINTS.add(pt);
+        return pt;
+    }
+
+    private static StartPoint addStartPoint(int x, int z, String name, int spreadRadius, float roundTimeMultiplier) {
+        StartPoint pt = new StartPoint(x, z, name, spreadRadius, roundTimeMultiplier);
         BROVILLE_START_POINTS.add(pt);
         return pt;
     }
