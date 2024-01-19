@@ -146,7 +146,11 @@ public class QuickfireCapability implements IQuickfireCapability {
 
         // Give all players resistance equal to their value in resistanceLevels
         resistanceLevels.forEach((player, resistanceLevel) -> {
-            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, -1, resistanceLevel));
+            if(resistanceLevel > 0) {
+                player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, -1, resistanceLevel));
+                // Send the player a message telling them their resistance level
+                player.sendSystemMessage(Component.literal("§3You gain " + resistanceLevel * 20 + "% damage resistance this round!"));
+            }
         });
 
         // Set world border to center on player
@@ -473,7 +477,7 @@ public class QuickfireCapability implements IQuickfireCapability {
         // If we have more than 5 minutes left
         if (roundTime % (int)(20*120*roundTimeMultiplier) == 0 && roundTime < (int)((SlugCraftConfig.quickfireRoundTime * 20 - (5 * 60 * 20))*roundTimeMultiplier)) {
             // Every 2 minutes, give everyone a bonus chest and send them a message
-            executeCommand(level, "/give @a chest{BlockEntityTag:{LootTable:\"minecraft:chests/woodland_mansion\"},display:{Name:\"{\\\"text\\\":\\\"Supply Crate\\\",\\\"color\\\":\\\"gold\\\",\\\"bold\\\":true}\"}}");
+            executeCommand(level, "/give @a chest{BlockEntityTag:{LootTable:\"minecraft:chests/village/village_weaponsmith\"},display:{Name:\"{\\\"text\\\":\\\"Supply Crate\\\",\\\"color\\\":\\\"gold\\\",\\\"bold\\\":true}\"}}");
             broadcastMessage(level, Component.literal("You got a supply crate!").withStyle(Style.EMPTY.withBold(true).withColor(net.minecraft.ChatFormatting.GOLD).withUnderlined(true)));
             // Play xp gain sound to all players with packet
             PacketHandler.sendToAll(new PlayClientsideSoundPacket(SoundEvents.EXPERIENCE_ORB_PICKUP.getLocation()));
@@ -526,7 +530,6 @@ public class QuickfireCapability implements IQuickfireCapability {
             }
         }
     }
-
 
     public void endRound(ServerLevel level, @Nullable Player winner) {
         // Set roundRunning to false

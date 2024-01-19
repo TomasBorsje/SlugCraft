@@ -66,6 +66,7 @@ public class SlugCraftLanguageProvider extends LanguageProvider {
         add(Registration.GOURMAND_SOUL.get(), "§6§lSoul of the Gourmand");
         add("slugcraft.gourmand_power", "Crouch to eat your currently held item (if it can't stack).");
         add("slugcraft.gourmand_power_two", "Eat two items to craft a random item.");
+        add("slugcraft.gourmand_power_three", "Taking fall damage hurts players near you for twice as much damage.");
         add("slugcraft.gourmand_haiku_one", "§8§oSlowly, steadily");
         add("slugcraft.gourmand_haiku_two", "§8§oGastronomic miracle");
         add("slugcraft.gourmand_haiku_three", "§8§oMust taste everything");

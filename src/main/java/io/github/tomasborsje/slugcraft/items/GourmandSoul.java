@@ -32,6 +32,7 @@ public class GourmandSoul extends Item {
     public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
         pTooltipComponents.add(Component.translatable("slugcraft.gourmand_power"));
         pTooltipComponents.add(Component.translatable("slugcraft.gourmand_power_two"));
+        pTooltipComponents.add(Component.translatable("slugcraft.gourmand_power_three"));
         pTooltipComponents.add(Component.literal(""));
         pTooltipComponents.add(Component.translatable("slugcraft.gourmand_haiku_one"));
         pTooltipComponents.add(Component.translatable("slugcraft.gourmand_haiku_two"));
